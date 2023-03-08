@@ -11,5 +11,6 @@ func RegisterPath(e *echo.Echo, pokemon *controllers.PokemonControllers) {
 	// route.Use(middleware.RemoveTrailingSlash())
 
 	route.GET("/pokemons", pokemon.GetAll)
+	route.POST("/competition", pokemon.AddCompetition)
 
 }
