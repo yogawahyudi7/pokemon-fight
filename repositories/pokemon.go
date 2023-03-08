@@ -12,6 +12,16 @@ import (
 	"gorm.io/gorm"
 )
 
+type CompetitionScoreTrx struct {
+	Id       int
+	Rank1st  int
+	Rank2nd  int
+	Rank3rd  int
+	Rank4th  int
+	Rank5th  int
+	SeasonId int
+}
+
 type PokemonRepositoriesInterface interface {
 	GetAll(limit, offset string) (data models.Pokemons, err error)
 	GetByUrl(url string) (data models.Pokemon, err error)
@@ -90,11 +100,6 @@ func (pr *PokemonRepositories) GetByUrl(url string) (data models.Pokemon, err er
 func (pr *PokemonRepositories) AddCompetition(params models.Competition) (data models.Competition, err error) {
 
 	data = models.Competition{
-		Rank1st:  params.Rank1st,
-		Rank2nd:  params.Rank2nd,
-		Rank3rd:  params.Rank3rd,
-		Rank4th:  params.Rank4th,
-		Rank5th:  params.Rank5th,
 		SeasonId: params.SeasonId,
 	}
 
@@ -113,7 +118,11 @@ func (pr *PokemonRepositories) AddScore(params models.Score) (data models.Score,
 	data = models.Score{
 		PokemonId:     params.PokemonId,
 		CompetitionId: params.CompetitionId,
-		Rank:          params.Rank,
+		Rank1stCount:  params.Rank1stCount,
+		Rank2ndCount:  params.Rank2ndCount,
+		Rank3rdCount:  params.Rank3rdCount,
+		Rank4thCount:  params.Rank4thCount,
+		Rank5thCount:  params.Rank5thCount,
 		Points:        params.Points,
 	}
 
@@ -162,11 +171,34 @@ func (pr *PokemonRepositories) AddCompetitionScoreTrx(params models.Competition)
 		competitionId := competition.ID
 		pokemonId := pokemonId[i]
 		points := n - i
-		rank := i + 1
+
+		rank1stCount := 0
+		rank2ndCount := 0
+		rank3rdCount := 0
+		rank4thCount := 0
+		rank5thCount := 0
+
+		switch i {
+		case 0:
+			rank1stCount = 1
+		case 1:
+			rank2ndCount = 1
+		case 2:
+			rank3rdCount = 1
+		case 3:
+			rank4thCount = 1
+		case 4:
+			rank5thCount = 1
+		}
+
 		score := models.Score{
 			PokemonId:     pokemonId,
 			CompetitionId: int(competitionId),
-			Rank:          rank,
+			Rank1stCount:  rank1stCount,
+			Rank2ndCount:  rank2ndCount,
+			Rank3rdCount:  rank3rdCount,
+			Rank4thCount:  rank4thCount,
+			Rank5thCount:  rank5thCount,
 			Points:        points,
 		}
 
@@ -186,6 +218,42 @@ func (pr *PokemonRepositories) AddCompetitionScoreTrx(params models.Competition)
 	tx.Commit()
 
 	data = competition
+
+	return data, err
+}
+
+func (pr *PokemonRepositories) GetCompetitions() (data []models.Competition, err error) {
+
+	query := pr.db.Debug()
+
+	err = query.Find(&data).Error
+
+	if query.Error != nil {
+		return data, err
+	}
+
+	return data, err
+}
+
+func (pr *PokemonRepositories) GetCompetitionsScore() (data []models.Competition, err error) {
+
+	// var
+	selectedField := []string{
+		"sc.pokemon_id as pokemon_id",
+	}
+	query := pr.db.Debug()
+
+	query = query.Table(models.Competition{}.TableName() + " AS co")
+
+	query = query.Select(selectedField)
+
+	query = query.Joins("JOIN " + models.Score{}.TableName() + " AS sc on sc.CompetiionId = co.Id")
+
+	err = query.Find(&data).Error
+
+	if query.Error != nil {
+		return data, err
+	}
 
 	return data, err
 }
