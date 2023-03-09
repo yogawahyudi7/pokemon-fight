@@ -44,6 +44,7 @@ type PokemonRepositoriesInterface interface {
 	AddBlackList(pokemonId int) (err error)
 	DeleteScoreById(pokemonId int) (err error)
 	GetBlackList(pokemonId int) (data []models.Score, err error)
+	GetBlackListById(pokemonId int) (data []models.Blacklist, err error)
 }
 
 type PokemonRepositories struct {
@@ -472,6 +473,20 @@ func (pr *PokemonRepositories) GetBlackList(pokemonId int) (data []models.Score,
 	query = query.Order("SUM(points) DESC")
 
 	err = query.Unscoped().Where("deleted_at IS NOT NULL").Find(&data).Error
+	if err != nil {
+		return data, err
+	}
+
+	return data, err
+}
+
+func (pr *PokemonRepositories) GetBlackListById(pokemonId int) (data []models.Blacklist, err error) {
+
+	query := pr.db.Debug()
+
+	query = query.Where("pokemon_id = ?", pokemonId)
+
+	err = query.Find(&data).Error
 	if err != nil {
 		return data, err
 	}
