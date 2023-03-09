@@ -321,3 +321,105 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, response.Found(result))
 }
+
+func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
+	response := Response{}
+
+	pokemonId := ctx.QueryParam("pokemonId")
+
+	pokemonIdInt, _ := strconv.Atoi(pokemonId)
+
+	err := pc.Repositories.AddBlackList(pokemonIdInt)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	err = pc.Repositories.DeleteScoreById(pokemonIdInt)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	return ctx.JSON(http.StatusOK, response.Saved(nil))
+}
+
+func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
+	response := Response{}
+
+	pokemonId := ctx.FormValue("pokemonId")
+
+	pokemonIdInt, _ := strconv.Atoi(pokemonId)
+
+	data, err := pc.Repositories.GetBlackList(pokemonIdInt)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	result := []DataScores{}
+
+	for _, vData := range data {
+
+		id := vData.ID
+		pokmeonId := vData.PokemonId
+		pokemon, err := pc.Repositories.GetByString(pokmeonId)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+		}
+
+		seasonId := vData.SeasonId
+		season := models.Season{}
+		if seasonId != 0 {
+			season, err = pc.Repositories.GetSeasonById(int(seasonId))
+			if err != nil {
+				return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+			}
+		}
+
+		pokemonData := Pokemon{
+			Id:   pokemon.Id,
+			Name: pokemon.Name,
+		}
+
+		startDate := season.StartDate.Format(constants.LayoutYMD)
+		endDate := season.EndDate.Format(constants.LayoutYMD)
+
+		// if startDate == "0001-01-01" {
+		// 	startDate = ""
+		// }
+
+		// if endDate == "0001-01-01" {
+		// 	endDate = ""
+		// }
+
+		seasonData := Season{
+			Id:        int(season.ID),
+			Name:      season.Name,
+			StartDate: startDate,
+			EndDate:   endDate,
+		}
+
+		data := DataScores{
+			Id:           int(id),
+			Pokemon:      pokemonData,
+			Rank1stCount: vData.Rank1stCount,
+			Rank2ndCount: vData.Rank2ndCount,
+			Rank3rdCount: vData.Rank3rdCount,
+			Rank4thCount: vData.Rank4thCount,
+			Rank5thCount: vData.Rank5thCount,
+			TotalPoint:   vData.TotalPoints,
+			Season:       seasonData,
+		}
+		if season.ID == 0 {
+			data.Season = "All Season"
+		}
+
+		result = append(result, data)
+
+	}
+
+	if len(result) < 1 {
+		return ctx.JSON(http.StatusNotFound, response.NotFound())
+	}
+
+	return ctx.JSON(http.StatusOK, response.Found(result))
+
+}

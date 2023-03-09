@@ -39,6 +39,11 @@ type PokemonRepositoriesInterface interface {
 	GetCompetitions(seasonId, filterScore int) (data []models.Competition, err error)
 	GetScores(seasonId int) (data []models.Score, err error)
 	GetCompetitionsScore() (data []models.Competition, err error)
+
+	//BLACKLIST
+	AddBlackList(pokemonId int) (err error)
+	DeleteScoreById(pokemonId int) (err error)
+	GetBlackList(pokemonId int) (data []models.Score, err error)
 }
 
 type PokemonRepositories struct {
@@ -405,5 +410,71 @@ func (pr *PokemonRepositories) GetScores(seasonId int) (data []models.Score, err
 		return data, err
 	}
 	fmt.Println(&data)
+	return data, err
+}
+
+func (pr *PokemonRepositories) AddBlackList(pokemonId int) (err error) {
+
+	data := models.Blacklist{
+		PokemonId: pokemonId,
+	}
+
+	query := pr.db.Debug()
+
+	err = query.Create(&data).Error
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (pr *PokemonRepositories) DeleteScoreById(pokemonId int) (err error) {
+
+	data := []models.Score{}
+
+	query := pr.db.Debug()
+
+	query = query.Where("pokemon_id = ?", pokemonId)
+
+	err = query.Delete(&data).Error
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (pr *PokemonRepositories) GetBlackList(pokemonId int) (data []models.Score, err error) {
+
+	selectedField := []string{
+		"pokemon_id",
+		"SUM(rank1st_count) AS rank1st_count",
+		"SUM(rank2nd_count) AS rank2nd_count",
+		"SUM(rank3rd_count) AS rank3rd_count",
+		"SUM(rank4th_count) AS rank4th_count",
+		"SUM(rank5th_count) AS rank5th_count",
+		"SUM(points) AS total_points",
+	}
+
+	query := pr.db.Debug()
+
+	query = query.Select(selectedField)
+
+	// query = query.Table(models.Score{})
+
+	if pokemonId != 0 {
+		query = query.Where("pokemon_id = ?", pokemonId)
+	}
+
+	query = query.Group("pokemon_id")
+
+	query = query.Order("SUM(points) DESC")
+
+	err = query.Unscoped().Where("deleted_at IS NOT NULL").Find(&data).Error
+	if err != nil {
+		return data, err
+	}
+
 	return data, err
 }
