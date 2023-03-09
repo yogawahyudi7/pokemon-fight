@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"pokemon-fight/models"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
@@ -31,34 +33,29 @@ func InitDB(config *configs.ServerConfig) *gorm.DB {
 	return db
 }
 
-// func InitialMigrate(db *gorm.DB) {
-// 	if config.Mode == "development" {
-// 		db.Migrator().DropTable(&models.DetailTransaction{})
-// 		db.Migrator().DropTable(&models.Transaction{})
-// 		db.Migrator().DropTable(&models.Product{})
-// 		db.Migrator().DropTable(&models.Rating{})
-// 		db.Migrator().DropTable(&models.Cashout{})
-// 		db.Migrator().DropTable(&models.Partner{})
-// 		db.Migrator().DropTable(&models.User{})
+func InitialMigrate(config *configs.ServerConfig, db *gorm.DB) {
+	if config.Mode == "DEV" {
+		db.Migrator().DropTable(&models.Score{})
+		db.Migrator().DropTable(&models.Competition{})
+		db.Migrator().DropTable(&models.Season{})
+		db.Migrator().DropTable(&models.Blacklist{})
+		// db.Migrator().DropTable(&models.Pokemon{})
 
-// 		db.AutoMigrate(&models.User{})
-// 		db.AutoMigrate(&models.Product{})
-// 		db.AutoMigrate(&models.Transaction{})
-// 		db.AutoMigrate(&models.Partner{})
-// 		db.AutoMigrate(&models.Rating{})
-// 		db.AutoMigrate(&models.Cashout{})
+		db.AutoMigrate(&models.Score{})
+		db.AutoMigrate(&models.Competition{})
+		db.AutoMigrate(&models.Season{})
+		db.AutoMigrate(&models.Blacklist{})
+		// db.AutoMigrate(&models.Pokemon{})
 
-// 		seeder.AdminSeeder(db)
-// 		seeder.UserSeeder(db)
-// 		seeder.PartnerSeeder(db)
-// 		seeder.ProductSeeder(db)
-// 	} else {
-// 		db.AutoMigrate(&models.User{})
-// 		db.AutoMigrate(&models.Product{})
-// 		db.AutoMigrate(&models.Transaction{})
-// 		db.AutoMigrate(&models.Partner{})
-// 		db.AutoMigrate(&models.Rating{})
-// 		db.AutoMigrate(&models.Cashout{})
-// 	}
+		db.Migrator().DropColumn(&models.Score{}, "TotalPoints")
+		db.Migrator().DropColumn(&models.Score{}, "SeasonId")
 
-// }
+	} else {
+		db.AutoMigrate(&models.Score{})
+		db.AutoMigrate(&models.Competition{})
+		db.AutoMigrate(&models.Season{})
+		db.AutoMigrate(&models.Blacklist{})
+		// db.AutoMigrate(&models.Pokemon{})
+	}
+
+}
