@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
@@ -16,11 +14,13 @@ type Score struct {
 	Rank4thCount  int `gorm:"column:rank4th_count"`
 	Rank5thCount  int `gorm:"column:rank5th_count"`
 	Points        int
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
 
 	// DataPokemon     Pokemon     `gorm:"foreignKey:PokemonId"`
 	DataCompetition Competition `gorm:"foreignKey:CompetitionId"`
+
+	//gom migrator drop table
+	TotalPoints int
+	SeasonId    int
 }
 
 func (Score) TableName() string {

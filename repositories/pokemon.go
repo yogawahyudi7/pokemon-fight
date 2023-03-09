@@ -23,13 +23,22 @@ type CompetitionScoreTrx struct {
 }
 
 type PokemonRepositoriesInterface interface {
+	//POKEMON
 	GetAll(limit, offset string) (data models.Pokemons, err error)
 	GetByUrl(url string) (data models.Pokemon, err error)
+	GetByString(str interface{}) (data models.Pokemon, err error)
 
+	//SEASON
+	GetSeasons() (data []models.Season, err error)
+	GetSeasonById(id int) (data models.Season, err error)
+
+	//COMPETITION
 	AddCompetition(params models.Competition) (data models.Competition, err error)
 	AddScore(params models.Score) (data models.Score, err error)
-
 	AddCompetitionScoreTrx(params models.Competition) (data models.Competition, err error)
+	GetCompetitions(seasonId, filterScore int) (data []models.Competition, err error)
+	GetScores(seasonId int) (data []models.Score, err error)
+	GetCompetitionsScore() (data []models.Competition, err error)
 }
 
 type PokemonRepositories struct {
@@ -74,6 +83,35 @@ func (pr *PokemonRepositories) GetAll(limit, offset string) (data models.Pokemon
 func (pr *PokemonRepositories) GetByUrl(url string) (data models.Pokemon, err error) {
 
 	apiPath := url
+
+	// fmt.Println("--API PATH--")
+	// fmt.Println(apiPath)
+
+	response, err := http.Get(apiPath)
+
+	if err != nil {
+		return data, err
+	}
+
+	responseData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return data, err
+	}
+
+	json.Unmarshal(responseData, &data)
+
+	// fmt.Println("--DATA RESULT--")
+	// fmt.Println(data)
+
+	return data, err
+}
+
+func (pr *PokemonRepositories) GetByString(str interface{}) (data models.Pokemon, err error) {
+
+	api := constants.PokemonAPIV2
+	path := fmt.Sprintf("pokemon/%v", str)
+	element := []string{api, path}
+	apiPath := strings.Join(element, "")
 
 	// fmt.Println("--API PATH--")
 	// fmt.Println(apiPath)
@@ -202,7 +240,17 @@ func (pr *PokemonRepositories) AddCompetitionScoreTrx(params models.Competition)
 			Points:        points,
 		}
 
-		err = tx.Create(&score).Error
+		selectedFilend := []string{
+			"PokemonId",
+			"CompetitionId",
+			"Rank1stCount",
+			"Rank2ndCount",
+			"Rank3rdCount",
+			"Rank4thCount",
+			"Rank5thCount",
+			"Points",
+		}
+		err = tx.Select(selectedFilend).Create(&score).Error
 
 		spCount := 2 + i
 		sp := fmt.Sprintf("sp%v", spCount)
@@ -222,11 +270,31 @@ func (pr *PokemonRepositories) AddCompetitionScoreTrx(params models.Competition)
 	return data, err
 }
 
-func (pr *PokemonRepositories) GetCompetitions() (data []models.Competition, err error) {
+func (pr *PokemonRepositories) GetCompetitions(seasonId, filterScore int) (data []models.Competition, err error) {
 
-	query := pr.db.Debug()
+	query := pr.db.Debug().Preload("DataScore")
 
-	err = query.Find(&data).Error
+	if seasonId != 0 {
+		query = query.Where("season_id = ?", seasonId)
+	}
+
+	// if filterScore == 1 {
+	// 	query = query.Preload("DataScore", func(db *gorm.DB) *gorm.DB {
+	// 		return db.Order("points asc")
+	// 	}).Find(&data)
+	// } else if filterScore == 2 {
+	// 	query = query.Preload("DataScore", func(db *gorm.DB) *gorm.DB {
+	// 		return db.Order("points desc")
+	// 	}).Find(&data)
+	// } else {
+	// query = query.Find(&data)
+	// }
+
+	query = query.Order("season_id DESC")
+
+	query = query.Find(&data)
+
+	err = query.Error
 
 	if query.Error != nil {
 		return data, err
@@ -255,5 +323,87 @@ func (pr *PokemonRepositories) GetCompetitionsScore() (data []models.Competition
 		return data, err
 	}
 
+	return data, err
+}
+
+func (pr *PokemonRepositories) GetSeasons() (data []models.Season, err error) {
+
+	query := pr.db.Debug()
+	err = query.Find(&data).Error
+
+	if query.Error != nil {
+		return data, err
+	}
+
+	return data, err
+}
+
+func (pr *PokemonRepositories) GetSeasonById(id int) (data models.Season, err error) {
+
+	query := pr.db.Debug()
+	query = query.Where("id = ?", id)
+	err = query.Find(&data).Error
+
+	if query.Error != nil {
+		return data, err
+	}
+
+	return data, err
+}
+
+func (pr *PokemonRepositories) GetScores(seasonId int) (data []models.Score, err error) {
+
+	selectedField := []string{
+		"pokemon_id",
+		"SUM(rank1st_count) AS rank1st_count",
+		"SUM(rank2nd_count) AS rank2nd_count",
+		"SUM(rank3rd_count) AS rank3rd_count",
+		"SUM(rank4th_count) AS rank4th_count",
+		"SUM(rank5th_count) AS rank5th_count",
+		"SUM(points) AS total_points",
+	}
+
+	query := pr.db.Debug()
+
+	if seasonId != 0 {
+		selectedField = append(selectedField, "season_id")
+
+		query = query.Where("season_id = ?", seasonId)
+
+		query = query.Group("season_id")
+	}
+
+	query = query.Select(selectedField)
+
+	query = query.Table(models.Score{}.TableName() + " AS sc")
+
+	query = query.Joins("JOIN " + models.Competition{}.TableName() + " AS co on co.ID = sc.competition_id")
+
+	query = query.Joins("JOIN " + models.Season{}.TableName() + " AS se on se.ID = co.season_id")
+
+	query = query.Group("pokemon_id")
+
+	query = query.Order("SUM(points) DESC")
+
+	query = query.Find(&data)
+
+	// if filterScore == 1 {
+	// 	query = query.Preload("DataScore", func(db *gorm.DB) *gorm.DB {
+	// 		return db.Order("points asc")
+	// 	}).Find(&data)
+	// } else if filterScore == 2 {
+	// 	query = query.Preload("DataScore", func(db *gorm.DB) *gorm.DB {
+	// 		return db.Order("points desc")
+	// 	}).Find(&data)
+	// } else {
+	// query = query.Find(&data)
+	// }
+
+	err = query.Error
+
+	if query.Error != nil {
+		return data, err
+	}
+	fmt.Println(&data)
 	return data, err
 }

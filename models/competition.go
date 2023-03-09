@@ -17,7 +17,8 @@ type Competition struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	DataSeason Season `gorm:"foreignKey:SeasonId"`
+	DataScore  []Score `gorm:"foreignKey:CompetitionId;references:ID"`
+	DataSeason Season  `gorm:"foreignKey:SeasonId"`
 }
 
 func (Competition) TableName() string {

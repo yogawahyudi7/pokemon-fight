@@ -18,7 +18,10 @@ func main() {
 	db := utils.InitDB(configs)
 
 	utils.InitialMigrate(configs, db)
+
 	seeders.SeasonSeeder(db)
+	seeders.CompetitionSeeder(db)
+	seeders.ScoreSeeder(db)
 
 	pokemonRepositories := repositories.NewPokemonRepositories(db)
 	pokemonControllers := controllers.NewPokemonControllers(pokemonRepositories)

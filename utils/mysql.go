@@ -47,10 +47,9 @@ func InitialMigrate(config *configs.ServerConfig, db *gorm.DB) {
 		db.AutoMigrate(&models.Blacklist{})
 		// db.AutoMigrate(&models.Pokemon{})
 
-		// seeder.AdminSeeder(db)
-		// seeder.UserSeeder(db)
-		// seeder.PartnerSeeder(db)
-		// seeder.ProductSeeder(db)
+		db.Migrator().DropColumn(&models.Score{}, "TotalPoints")
+		db.Migrator().DropColumn(&models.Score{}, "SeasonId")
+
 	} else {
 		db.AutoMigrate(&models.Score{})
 		db.AutoMigrate(&models.Competition{})

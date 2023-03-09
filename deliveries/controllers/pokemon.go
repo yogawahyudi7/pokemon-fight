@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"pokemon-fight/constants"
 	"pokemon-fight/helpers"
 	"pokemon-fight/models"
 	"pokemon-fight/repositories"
@@ -11,71 +12,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
-
-type Response struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
-}
-
-func (r Response) Saved(data interface{}) Response {
-	return Response{
-		Code:    200,
-		Message: "Data Berhasil Disimpan.",
-		Data:    data,
-	}
-}
-
-func (r Response) Found(data interface{}) Response {
-	return Response{
-		Code:    200,
-		Message: "Data Ditemukan.",
-		Data:    data,
-	}
-}
-
-func (r Response) BadRequest(message string) Response {
-	return Response{
-		Code:    400,
-		Message: message,
-		Data:    nil,
-	}
-}
-
-func (r Response) NotFound() Response {
-	return Response{
-		Code:    404,
-		Message: "Data Tidak Ditemukan.",
-		Data:    nil,
-	}
-}
-
-func (r Response) InternalServerError() Response {
-	return Response{
-		Code:    500,
-		Message: "Maaf, Server Sedang Dalam Perbaikan Cobalah Beberapa Saat Lagi.",
-		Data:    nil,
-	}
-}
-
-type PokemonData struct {
-	Id             int      `json:"id"`
-	Name           string   `json:"name"`
-	Abilities      []string `json:"abilities"`
-	Height         int      `json:"height"`
-	Weight         int      `json:"weight"`
-	BaseExperience int      `json:"base_experience"`
-}
-
-type CompetitionData struct {
-	Id       int `json:"id"`
-	Rank1st  int `json:"rank1st"`
-	Rank2nd  int `json:"rank2nd"`
-	Rank3rd  int `json:"rank3rd"`
-	Rank4th  int `json:"rank4th"`
-	Rank5th  int `json:"rank5th"`
-	SeasonId int `json:"Season_id"`
-}
 
 var validate = validator.New()
 
@@ -118,7 +54,7 @@ func (pc PokemonControllers) GetAll(ctx echo.Context) error {
 	fmt.Println("=", offset)
 	dataGetAll, err := pc.Repositories.GetAll(limit, offset)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError())
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
 	// fmt.Println("-- DATA GET ALL --")
@@ -131,7 +67,7 @@ func (pc PokemonControllers) GetAll(ctx echo.Context) error {
 
 		pokemon, err := pc.Repositories.GetByUrl(url)
 		if err != nil {
-			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError())
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 		}
 
 		var abilities []string
@@ -190,9 +126,17 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 		SeasonId: seasonIdInt,
 	}
 
+	season, err := pc.Repositories.GetSeasonById(seasonIdInt)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+	if season.ID == 0 {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Season Id Tidak Ditemukan"))
+	}
+
 	conpetition, err := pc.Repositories.AddCompetitionScoreTrx(params)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError())
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
 	competition := CompetitionData{
@@ -205,4 +149,175 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 		SeasonId: conpetition.SeasonId,
 	}
 	return ctx.JSON(http.StatusOK, response.Saved(competition))
+}
+
+func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
+	response := Response{}
+
+	seasonId := ctx.QueryParam("seasonId")
+	filterScore := ctx.QueryParam("filterScore")
+
+	seasonIdInt, _ := strconv.Atoi(seasonId)
+	filterScoreInt, _ := strconv.Atoi(filterScore)
+
+	dataCompetition, err := pc.Repositories.GetCompetitions(seasonIdInt, filterScoreInt)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	result := []DataCompetition{}
+
+	for _, vData := range dataCompetition {
+
+		id := vData.ID
+		pokemon1st, err := pc.Repositories.GetByString(vData.Rank1st)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon1st :"+err.Error()))
+		}
+
+		pokemon2nd, err := pc.Repositories.GetByString(vData.Rank2nd)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon2nd :"+err.Error()))
+		}
+
+		pokemon3rd, err := pc.Repositories.GetByString(vData.Rank3rd)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon3rd :"+err.Error()))
+		}
+
+		pokemon4th, err := pc.Repositories.GetByString(vData.Rank4th)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon4th :"+err.Error()))
+		}
+
+		pokemon5th, err := pc.Repositories.GetByString(vData.Rank5th)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon5th :"+err.Error()))
+		}
+
+		season, err := pc.Repositories.GetSeasonById(vData.SeasonId)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("season :"+err.Error()))
+		}
+
+		data := DataCompetition{
+			Id: int(id),
+			Rank1st: Pokemon{
+				Id:   pokemon1st.Id,
+				Name: pokemon1st.Name,
+			},
+			Rank2nd: Pokemon{
+				Id:   pokemon2nd.Id,
+				Name: pokemon2nd.Name,
+			},
+			Rank3rd: Pokemon{
+				Id:   pokemon3rd.Id,
+				Name: pokemon3rd.Name,
+			},
+			Rank4th: Pokemon{
+				Id:   pokemon4th.Id,
+				Name: pokemon4th.Name,
+			},
+			Rank5th: Pokemon{
+				Id:   pokemon5th.Id,
+				Name: pokemon5th.Name,
+			},
+			Season: Season{
+				Id:        int(season.ID),
+				Name:      season.Name,
+				StartDate: season.StartDate.Format(constants.LayoutYMD),
+				EndDate:   season.EndDate.Format(constants.LayoutYMD),
+			},
+		}
+
+		result = append(result, data)
+
+	}
+
+	if len(result) < 1 {
+		return ctx.JSON(http.StatusNotFound, response.NotFound())
+	}
+
+	return ctx.JSON(http.StatusOK, response.Found(result))
+}
+
+func (pc PokemonControllers) GetScores(ctx echo.Context) error {
+	response := Response{}
+
+	seasonId := ctx.QueryParam("seasonId")
+
+	seasonIdInt, _ := strconv.Atoi(seasonId)
+
+	dataScore, err := pc.Repositories.GetScores(seasonIdInt)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	result := []DataScores{}
+
+	for _, vData := range dataScore {
+
+		id := vData.ID
+		pokmeonId := vData.PokemonId
+		pokemon, err := pc.Repositories.GetByString(pokmeonId)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+		}
+
+		seasonId := vData.SeasonId
+		season := models.Season{}
+		if seasonId != 0 {
+			season, err = pc.Repositories.GetSeasonById(int(seasonId))
+			if err != nil {
+				return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+			}
+		}
+
+		pokemonData := Pokemon{
+			Id:   pokemon.Id,
+			Name: pokemon.Name,
+		}
+
+		startDate := season.StartDate.Format(constants.LayoutYMD)
+		endDate := season.EndDate.Format(constants.LayoutYMD)
+
+		// if startDate == "0001-01-01" {
+		// 	startDate = ""
+		// }
+
+		// if endDate == "0001-01-01" {
+		// 	endDate = ""
+		// }
+
+		seasonData := Season{
+			Id:        int(season.ID),
+			Name:      season.Name,
+			StartDate: startDate,
+			EndDate:   endDate,
+		}
+
+		data := DataScores{
+			Id:           int(id),
+			Pokemon:      pokemonData,
+			Rank1stCount: vData.Rank1stCount,
+			Rank2ndCount: vData.Rank2ndCount,
+			Rank3rdCount: vData.Rank3rdCount,
+			Rank4thCount: vData.Rank4thCount,
+			Rank5thCount: vData.Rank5thCount,
+			TotalPoint:   vData.TotalPoints,
+			Season:       seasonData,
+		}
+		if season.ID == 0 {
+			data.Season = "All Season"
+		}
+
+		result = append(result, data)
+
+	}
+
+	if len(result) < 1 {
+		return ctx.JSON(http.StatusNotFound, response.NotFound())
+	}
+
+	return ctx.JSON(http.StatusOK, response.Found(result))
 }

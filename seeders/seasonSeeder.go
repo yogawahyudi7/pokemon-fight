@@ -22,4 +22,11 @@ func SeasonSeeder(db *gorm.DB) {
 		EndDate:   time.Now().AddDate(0, 2, 0),
 	}
 	db.Create(&season2)
+
+	season3 := models.Season{
+		Name:      "Third Season",
+		StartDate: time.Now().AddDate(0, 2, 0),
+		EndDate:   time.Now().AddDate(0, 3, 0),
+	}
+	db.Create(&season3)
 }
