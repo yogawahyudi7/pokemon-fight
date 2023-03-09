@@ -14,4 +14,7 @@ func RegisterPath(e *echo.Echo, pokemon *controllers.PokemonControllers) {
 	route.POST("/competition", pokemon.AddCompetition)
 	route.GET("/competitions", pokemon.GetCompetitions)
 	route.GET("/scores", pokemon.GetScores)
+	route.GET("/scores", pokemon.GetScores)
+	route.DELETE("/pokemon", pokemon.AddBlackList)
+	route.GET("/blacklist", pokemon.GetBlackList)
 }
