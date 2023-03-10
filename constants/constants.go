@@ -1,6 +1,7 @@
 package constants
 
 const (
+	SecretJWT    = "overtime"
 	PokemonAPIV2 = "https://pokeapi.co/api/v2/"
 
 	LayoutYMD = "2006-01-02"
