@@ -10,11 +10,11 @@ func RegisterPath(e *echo.Echo, pokemon *controllers.PokemonControllers) {
 	route := e.Group("/v1")
 	// route.Use(middleware.RemoveTrailingSlash())
 
-	route.GET("/pokemons", pokemon.GetAll)
+	route.GET("/pokemons", pokemon.GetPokemons)
+	route.GET("/pokemon", pokemon.GetPokemon)
 
 	route.POST("/competition", pokemon.AddCompetition)
 	route.GET("/competitions", pokemon.GetCompetitions)
-
 	route.GET("/scores", pokemon.GetScores)
 
 	route.DELETE("/pokemon", pokemon.AddBlackList)
