@@ -527,25 +527,19 @@ func (pc PokemonControllers) AddSeason(ctx echo.Context) error {
 	startDate := ctx.FormValue("start_date")
 	endDate := ctx.FormValue("end_date")
 
-	code, _ := helpers.ValidatorGeneralName(name)
-	if code == 1 {
-		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter Nama Tidak Boleh Kosong."))
+	_, errStr := helpers.ValidatorGeneralName(name)
+	if errStr != "" {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest(errStr))
 	}
 
-	code, _ = helpers.ValidatorDate(startDate)
-	if code == 1 {
-		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter Tanggal Tidak Boleh Kosong."))
-	}
-	if code == 2 {
-		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Format Parameter Tanggal tidak sesuai. Ex:yyyy-mm-dd."))
+	_, errStr = helpers.ValidatorDate(startDate)
+	if errStr != "" {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest(errStr))
 	}
 
-	code, _ = helpers.ValidatorDate(endDate)
-	if code == 1 {
-		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter Tanggal Tidak Boleh Kosong."))
-	}
-	if code == 2 {
-		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Format Parameter Tanggal tidak sesuai. Ex:yyyy-mm-dd."))
+	_, errStr = helpers.ValidatorDate(endDate)
+	if errStr != "" {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest(errStr))
 	}
 
 	startDateParse, _ := time.Parse(constants.LayoutYMD, startDate)
