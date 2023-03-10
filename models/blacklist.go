@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Blacklist struct {
 	gorm.Model
-	PokemonId int
+	PokemonId int `gorm:"unique"`
 
 	// DataPokemon Pokemon `gorm:"foreignKey:PokemonId"`
 }

@@ -8,6 +8,8 @@ import (
 	"pokemon-fight/models"
 	"pokemon-fight/repositories"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -101,12 +103,12 @@ func (pc PokemonControllers) GetAll(ctx echo.Context) error {
 func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 	response := Response{}
 
-	rank1st := ctx.FormValue("rank1st")
-	rank2nd := ctx.FormValue("rank2nd")
-	rank3rd := ctx.FormValue("rank3rd")
-	rank4th := ctx.FormValue("rank4th")
-	rank5th := ctx.FormValue("rank5th")
-	seasonId := ctx.FormValue("seasonId")
+	rank1st := ctx.FormValue("rank_1st")
+	rank2nd := ctx.FormValue("rank_2nd")
+	rank3rd := ctx.FormValue("rank_3rd")
+	rank4th := ctx.FormValue("rank_4th")
+	rank5th := ctx.FormValue("rank_5th")
+	seasonId := ctx.FormValue("season_id")
 
 	// fmt.Println("rank1st", rank1st)
 
@@ -349,12 +351,15 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
 	response := Response{}
 
-	pokemonId := ctx.QueryParam("pokemonId")
+	pokemonId := ctx.QueryParam("pokemon_id")
 
 	pokemonIdInt, _ := strconv.Atoi(pokemonId)
 
 	err := pc.Repositories.AddBlackList(pokemonIdInt)
 	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return ctx.JSON(http.StatusBadRequest, response.BadRequest(fmt.Sprintf("Maaf, Id Pokemon %v Sudah Terdaftar Dalam Blacklist", pokemonIdInt)))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
@@ -369,7 +374,7 @@ func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
 func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 	response := Response{}
 
-	pokemonId := ctx.FormValue("pokemonId")
+	pokemonId := ctx.FormValue("pokemon_id")
 
 	pokemonIdInt, _ := strconv.Atoi(pokemonId)
 
@@ -445,5 +450,86 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, response.Found(result))
+
+}
+
+func (pc PokemonControllers) AddSeason(ctx echo.Context) error {
+	response := Response{}
+
+	name := ctx.FormValue("name")
+	startDate := ctx.FormValue("start_date")
+	endDate := ctx.FormValue("end_date")
+
+	code, _ := helpers.ValidatorGeneralName(name)
+	if code == 1 {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter Nama Tidak Boleh Kosong."))
+	}
+
+	code, _ = helpers.ValidatorDate(startDate)
+	if code == 1 {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter Tanggal Tidak Boleh Kosong."))
+	}
+	if code == 2 {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Format Parameter Tanggal tidak sesuai. Ex:yyyy-mm-dd."))
+	}
+
+	code, _ = helpers.ValidatorDate(endDate)
+	if code == 1 {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter Tanggal Tidak Boleh Kosong."))
+	}
+	if code == 2 {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Format Parameter Tanggal tidak sesuai. Ex:yyyy-mm-dd."))
+	}
+
+	startDateParse, _ := time.Parse(constants.LayoutYMD, startDate)
+	endDateParse, _ := time.Parse(constants.LayoutYMD, endDate)
+
+	paramsSeason := models.Season{
+		Name:      name,
+		StartDate: startDateParse,
+		EndDate:   endDateParse,
+	}
+
+	err := pc.Repositories.AddSeason(paramsSeason)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	return ctx.JSON(http.StatusOK, response.Saved(nil))
+}
+
+func (pc PokemonControllers) GetSeasons(ctx echo.Context) error {
+	response := Response{}
+
+	seasonData, err := pc.Repositories.GetSeasons()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	data := []Season{}
+
+	for _, vData := range seasonData {
+
+		id := vData.ID
+		name := vData.Name
+		startDate := vData.StartDate.Format(constants.LayoutYMD)
+		endDate := vData.EndDate.Format(constants.LayoutYMD)
+
+		seasonData := Season{
+			Id:        int(id),
+			Name:      name,
+			StartDate: startDate,
+			EndDate:   endDate,
+		}
+
+		data = append(data, seasonData)
+
+	}
+
+	if len(data) < 1 {
+		return ctx.JSON(http.StatusNotFound, response.NotFound())
+	}
+
+	return ctx.JSON(http.StatusOK, response.Found(data))
 
 }

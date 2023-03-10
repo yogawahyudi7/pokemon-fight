@@ -29,6 +29,7 @@ type PokemonRepositoriesInterface interface {
 	GetByString(str interface{}) (data models.Pokemon, err error)
 
 	//SEASON
+	AddSeason(params models.Season) (err error)
 	GetSeasons() (data []models.Season, err error)
 	GetSeasonById(id int) (data models.Season, err error)
 
@@ -450,11 +451,11 @@ func (pr *PokemonRepositories) GetBlackList(pokemonId int) (data []models.Score,
 
 	selectedField := []string{
 		"pokemon_id",
-		"SUM(rank1st_count) AS rank1st_count",
-		"SUM(rank2nd_count) AS rank2nd_count",
-		"SUM(rank3rd_count) AS rank3rd_count",
-		"SUM(rank4th_count) AS rank4th_count",
-		"SUM(rank5th_count) AS rank5th_count",
+		"SUM(rank_1st_count) AS rank_1st_count",
+		"SUM(rank_2nd_count) AS rank_2nd_count",
+		"SUM(rank_3rd_count) AS rank_3rd_count",
+		"SUM(rank_4th_count) AS rank_4th_count",
+		"SUM(rank_5th_count) AS rank_5th_count",
 		"SUM(points) AS total_points",
 	}
 
@@ -492,4 +493,22 @@ func (pr *PokemonRepositories) GetBlackListById(pokemonId int) (data []models.Bl
 	}
 
 	return data, err
+}
+
+func (pr *PokemonRepositories) AddSeason(params models.Season) (err error) {
+
+	data := models.Season{
+		Name:      params.Name,
+		StartDate: params.StartDate,
+		EndDate:   params.EndDate,
+	}
+
+	query := pr.db.Debug()
+
+	err = query.Create(&data).Error
+	if err != nil {
+		return err
+	}
+
+	return err
 }
