@@ -31,12 +31,19 @@ func (r Response) BadRequest(message string) Response {
 	}
 }
 
-func (r Response) NotFound() Response {
-	return Response{
+func (r Response) NotFound(message string) Response {
+
+	response := Response{
 		Code:    404,
-		Message: "Data Tidak Ditemukan.",
+		Message: message,
 		Data:    nil,
 	}
+	if message == "" {
+		response.Message = "Data Tidak Ditemukan."
+	}
+
+	return response
+
 }
 
 func (r Response) InternalServerError(err string) Response {

@@ -1,11 +1,18 @@
 package controllers
 
+type Stats struct {
+	Name     string `json:"name"`
+	BaseStat int    `json:"base_stat"`
+	Effort   int    `json:"effort"`
+}
 type PokemonData struct {
 	Id             int      `json:"id"`
 	Name           string   `json:"name"`
 	Abilities      []string `json:"abilities"`
 	Height         int      `json:"height"`
 	Weight         int      `json:"weight"`
+	Types          []string `json:"types"`
+	Stats          []Stats  `json:"stats"`
 	BaseExperience int      `json:"base_experience"`
 }
 
@@ -42,12 +49,12 @@ type DataCompetition struct {
 
 type DataScores struct {
 	Id           int         `json:"id,omitempty"`
+	TotalPoints  int         `json:"total_points"`
 	Pokemon      Pokemon     `json:"pokemon"`
 	Rank1stCount int         `json:"rank_1st_count"`
 	Rank2ndCount int         `json:"rank_2nd_count"`
 	Rank3rdCount int         `json:"rank_3rd_count"`
 	Rank4thCount int         `json:"rank_4th_count"`
 	Rank5thCount int         `json:"rank_5th_count"`
-	TotalPoint   int         `json:"total_point"`
 	Season       interface{} `json:"season,omitempty"`
 }

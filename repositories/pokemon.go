@@ -285,11 +285,11 @@ func (pr *PokemonRepositories) GetScores(seasonId int) (data []models.Score, err
 
 	selectedField := []string{
 		"pokemon_id",
-		"SUM(rank1st_count) AS rank1st_count",
-		"SUM(rank2nd_count) AS rank2nd_count",
-		"SUM(rank3rd_count) AS rank3rd_count",
-		"SUM(rank4th_count) AS rank4th_count",
-		"SUM(rank5th_count) AS rank5th_count",
+		"SUM(rank_1st_count) AS rank_1st_count",
+		"SUM(rank_2nd_count) AS rank_2nd_count",
+		"SUM(rank_3rd_count) AS rank_3rd_count",
+		"SUM(rank_4th_count) AS rank_4th_count",
+		"SUM(rank_5th_count) AS rank_5th_count",
 		"SUM(points) AS total_points",
 	}
 

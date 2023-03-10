@@ -92,7 +92,7 @@ func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
 	}
 
 	if len(pokemons) < 1 {
-		return ctx.JSON(http.StatusNotFound, response.NotFound())
+		return ctx.JSON(http.StatusNotFound, response.NotFound(""))
 	}
 	// fmt.Println("-- DATA POKEMON --")
 	// fmt.Println("=", pokemons)
@@ -123,17 +123,37 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 		abilities = append(abilities, data)
 	}
 
+	types := []string{}
+	for _, vData := range data.Types {
+		data := vData.Type.Name
+
+		types = append(types, data)
+	}
+
+	stats := []Stats{}
+	for _, vData := range data.Stats {
+		data := Stats{
+			Name:     vData.Stat.Name,
+			BaseStat: vData.BaseStat,
+			Effort:   vData.Effort,
+		}
+
+		stats = append(stats, data)
+	}
+
 	pokemon := PokemonData{
 		Id:             data.Id,
 		Name:           data.Name,
 		Abilities:      abilities,
 		Height:         data.Height,
 		Weight:         data.Weight,
+		Types:          types,
+		Stats:          stats,
 		BaseExperience: data.BaseExperience,
 	}
 
 	if data.Id == 0 {
-		return ctx.JSON(http.StatusNotFound, response.NotFound())
+		return ctx.JSON(http.StatusNotFound, response.NotFound(""))
 	}
 	// fmt.Println("-- DATA POKEMON --")
 	// fmt.Println("=", pokemons)
@@ -193,7 +213,7 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 		fmt.Println(availablePokemons)
 		if availablePokemons.Id == 0 {
 			responseMessage := fmt.Sprintf("Maaf, Pokemon Dengan Id [%v] Tidak Ditemukan.", vData)
-			return ctx.JSON(http.StatusBadRequest, response.BadRequest(responseMessage))
+			return ctx.JSON(http.StatusNotFound, response.NotFound(responseMessage))
 
 		}
 		//CHECK BLACK LIST
@@ -326,7 +346,7 @@ func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 	}
 
 	if len(result) < 1 {
-		return ctx.JSON(http.StatusNotFound, response.NotFound())
+		return ctx.JSON(http.StatusNotFound, response.NotFound(""))
 	}
 
 	return ctx.JSON(http.StatusOK, response.Found(result))
@@ -335,7 +355,7 @@ func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 	response := Response{}
 
-	seasonId := ctx.QueryParam("seasonId")
+	seasonId := ctx.QueryParam("season_id")
 
 	seasonIdInt, _ := strconv.Atoi(seasonId)
 
@@ -372,14 +392,6 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 		startDate := season.StartDate.Format(constants.LayoutYMD)
 		endDate := season.EndDate.Format(constants.LayoutYMD)
 
-		// if startDate == "0001-01-01" {
-		// 	startDate = ""
-		// }
-
-		// if endDate == "0001-01-01" {
-		// 	endDate = ""
-		// }
-
 		seasonData := Season{
 			Id:        int(season.ID),
 			Name:      season.Name,
@@ -395,7 +407,7 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 			Rank3rdCount: vData.Rank3rdCount,
 			Rank4thCount: vData.Rank4thCount,
 			Rank5thCount: vData.Rank5thCount,
-			TotalPoint:   vData.TotalPoints,
+			TotalPoints:  vData.TotalPoints,
 			Season:       seasonData,
 		}
 		if season.ID == 0 {
@@ -407,7 +419,7 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 	}
 
 	if len(result) < 1 {
-		return ctx.JSON(http.StatusNotFound, response.NotFound())
+		return ctx.JSON(http.StatusNotFound, response.NotFound(""))
 	}
 
 	return ctx.JSON(http.StatusOK, response.Found(result))
@@ -420,7 +432,16 @@ func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
 
 	pokemonIdInt, _ := strconv.Atoi(pokemonId)
 
-	err := pc.Repositories.AddBlackList(pokemonIdInt)
+	dataPokemon, err := pc.Repositories.GetPokemon(pokemonIdInt)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+	if dataPokemon.Id == 0 {
+		responseMessage := fmt.Sprintf("Maaf, Pokemon Dengan Id [%v] Tidak Ditemukan.", pokemonIdInt)
+		return ctx.JSON(http.StatusNotFound, response.NotFound(responseMessage))
+	}
+
+	err = pc.Repositories.AddBlackList(pokemonIdInt)
 	if err != nil {
 		if strings.Contains(err.Error(), "Duplicate entry") {
 			return ctx.JSON(http.StatusBadRequest, response.BadRequest(fmt.Sprintf("Maaf, Id Pokemon %v Sudah Terdaftar Dalam Blacklist", pokemonIdInt)))
@@ -499,7 +520,7 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 			Rank3rdCount: vData.Rank3rdCount,
 			Rank4thCount: vData.Rank4thCount,
 			Rank5thCount: vData.Rank5thCount,
-			TotalPoint:   vData.TotalPoints,
+			TotalPoints:  vData.TotalPoints,
 			Season:       seasonData,
 		}
 		if season.ID == 0 {
@@ -511,7 +532,7 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 	}
 
 	if len(result) < 1 {
-		return ctx.JSON(http.StatusNotFound, response.NotFound())
+		return ctx.JSON(http.StatusNotFound, response.NotFound(""))
 	}
 
 	return ctx.JSON(http.StatusOK, response.Found(result))
@@ -586,7 +607,7 @@ func (pc PokemonControllers) GetSeasons(ctx echo.Context) error {
 	}
 
 	if len(data) < 1 {
-		return ctx.JSON(http.StatusNotFound, response.NotFound())
+		return ctx.JSON(http.StatusNotFound, response.NotFound(""))
 	}
 
 	return ctx.JSON(http.StatusOK, response.Found(data))
