@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"pokemon-fight/constants"
 	"pokemon-fight/deliveries/common"
+	"pokemon-fight/deliveries/middleware"
 	"pokemon-fight/helpers"
 	"pokemon-fight/models"
 	"pokemon-fight/repositories"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var validate = validator.New()
@@ -29,12 +32,25 @@ func NewPokemonControllers(repositories repositories.PokemonRepositoriesInterfac
 func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
 	response := common.Response{}
 
+	//check otorisasi
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 2 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Operasional")
+	}
+
 	page := ctx.QueryParam("page")
 	fmt.Println("PAGE :", page)
 	if page == "" {
 		page = "1"
 	}
-	err := validate.Var(page, "number")
+	err = validate.Var(page, "number")
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [page] Hanya Boleh Disi Dengan Angka."))
 
@@ -104,6 +120,19 @@ func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
 func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 	response := common.Response{}
 
+	//check otorisasi
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 2 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Operasional")
+	}
+
 	search := ctx.QueryParam("search")
 	if search == "" {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter Search Tidak Boleh Kosong."))
@@ -164,6 +193,18 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 
 func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 	response := common.Response{}
+
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 3 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Pengedar")
+	}
 
 	rank1st := ctx.FormValue("rank_1st")
 	rank2nd := ctx.FormValue("rank_2nd")
@@ -272,6 +313,19 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 	response := common.Response{}
 
+	//check otorisasi
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 1 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Bos")
+	}
+
 	seasonId := ctx.QueryParam("season_id")
 
 	seasonIdInt, _ := strconv.Atoi(seasonId)
@@ -360,6 +414,19 @@ func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 	response := common.Response{}
 
+	//check otorisasi
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 1 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Bos")
+	}
+
 	seasonId := ctx.QueryParam("season_id")
 
 	seasonIdInt, _ := strconv.Atoi(seasonId)
@@ -433,6 +500,19 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
 	response := common.Response{}
 
+	//check otorisasi
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 1 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Bos")
+	}
+
 	pokemonId := ctx.QueryParam("pokemon_id")
 
 	pokemonIdInt, _ := strconv.Atoi(pokemonId)
@@ -464,6 +544,19 @@ func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
 
 func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 	response := common.Response{}
+
+	//check otorisasi
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 1 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Bos")
+	}
 
 	pokemonId := ctx.FormValue("pokemon_id")
 
@@ -547,6 +640,18 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 func (pc PokemonControllers) AddSeason(ctx echo.Context) error {
 	response := common.Response{}
 
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 3 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Pengedar")
+	}
+
 	name := ctx.FormValue("name")
 	startDate := ctx.FormValue("start_date")
 	endDate := ctx.FormValue("end_date")
@@ -575,7 +680,7 @@ func (pc PokemonControllers) AddSeason(ctx echo.Context) error {
 		EndDate:   endDateParse,
 	}
 
-	err := pc.Repositories.AddSeason(paramsSeason)
+	err = pc.Repositories.AddSeason(paramsSeason)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
@@ -585,6 +690,18 @@ func (pc PokemonControllers) AddSeason(ctx echo.Context) error {
 
 func (pc PokemonControllers) GetSeasons(ctx echo.Context) error {
 	response := common.Response{}
+
+	logged_in_user_id := middleware.ExtractToken(ctx)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	if user.LevelID != 3 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authorized only by Pengedar")
+	}
 
 	seasonData, err := pc.Repositories.GetSeasons()
 	if err != nil {
@@ -617,4 +734,282 @@ func (pc PokemonControllers) GetSeasons(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, response.Found(data))
 
+}
+
+//AUTH
+
+type UserOutput struct {
+	ID    uint   `json:"id"`
+	Level string `json:"level"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+type UserOutput1 struct {
+	ID    uint   `json:"id"`
+	Level string `json:"level"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
+}
+
+func EncryptPwd(pwd []byte) string {
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return string(hash)
+}
+
+func (pc PokemonControllers) RegisterBos(c echo.Context) error {
+	//get user's input
+	input_user := models.User{}
+	input_user.LevelID = 1
+	c.Bind(&input_user)
+
+	//check is data nil?
+	if input_user.Email == "" || input_user.Password == "" || input_user.Name == "" || input_user.LevelID == 0 {
+		return c.JSON(http.StatusBadRequest, "Maaf, Dimohon Untuk Melengkapi Semua Data.")
+	}
+
+	//check is email exists?
+	is_email_exists, _ := pc.Repositories.CheckEmail(input_user.Email)
+	if is_email_exists {
+		return c.JSON(http.StatusBadRequest, "Maaf, Email Sudah Pernah Terdaftar.")
+	}
+
+	//encrypt pass user
+	convert_pwd := []byte(input_user.Password) //convert pass from string to byte
+	hashed_pwd := EncryptPwd(convert_pwd)
+	input_user.Password = hashed_pwd //set new pass
+
+	//create new user
+	user, err := pc.Repositories.Register(input_user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Menginputkan Data")
+	}
+
+	//get level name
+	level, err := pc.Repositories.GetLevel(int(user.LevelID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+
+	//customize output
+	output := UserOutput{
+		ID:    user.ID,
+		Level: level.Name,
+		Email: user.Email,
+		Name:  user.Name,
+	}
+
+	return c.JSON(http.StatusOK, output)
+}
+
+func (pc PokemonControllers) RegisterOperasional(c echo.Context) error {
+	//get user's input
+	input_user := models.User{}
+	input_user.LevelID = 2
+	c.Bind(&input_user)
+
+	//check is data nil?
+	if input_user.Email == "" || input_user.Password == "" || input_user.Name == "" || input_user.LevelID == 0 {
+		return c.JSON(http.StatusBadRequest, "Maaf, Dimohon Untuk Melengkapi Semua Data.")
+	}
+
+	//check is email exists?
+	is_email_exists, _ := pc.Repositories.CheckEmail(input_user.Email)
+	if is_email_exists {
+		return c.JSON(http.StatusBadRequest, "Email already exist")
+	}
+
+	//encrypt pass user
+	convert_pwd := []byte(input_user.Password) //convert pass from string to byte
+	hashed_pwd := EncryptPwd(convert_pwd)
+	input_user.Password = hashed_pwd //set new pass
+
+	//create new user
+	user, err := pc.Repositories.Register(input_user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Menginputkan Data")
+	}
+
+	//get level name
+	level, err := pc.Repositories.GetLevel(int(user.LevelID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+
+	//customize output
+	output := UserOutput{
+		ID:    user.ID,
+		Level: level.Name,
+		Email: user.Email,
+		Name:  user.Name,
+	}
+
+	return c.JSON(http.StatusOK, output)
+}
+
+func (pc PokemonControllers) RegisterPengedar(c echo.Context) error {
+	//get user's input
+	input_user := models.User{}
+	input_user.LevelID = 3
+	c.Bind(&input_user)
+
+	//check is data nil?
+	if input_user.Email == "" || input_user.Password == "" || input_user.Name == "" || input_user.LevelID == 0 {
+		return c.JSON(http.StatusBadRequest, "Maaf, Dimohon Untuk Melengkapi Semua Data.")
+	}
+
+	//check is email exists?
+	is_email_exists, _ := pc.Repositories.CheckEmail(input_user.Email)
+	if is_email_exists {
+		return c.JSON(http.StatusBadRequest, "Email already exist")
+	}
+
+	//encrypt pass user
+	convert_pwd := []byte(input_user.Password) //convert pass from string to byte
+	hashed_pwd := EncryptPwd(convert_pwd)
+	input_user.Password = hashed_pwd //set new pass
+
+	//create new user
+	user, err := pc.Repositories.Register(input_user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Menginputkan Data")
+	}
+
+	//get level name
+	level, err := pc.Repositories.GetLevel(int(user.LevelID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+
+	//customize output
+	output := UserOutput{
+		ID:    user.ID,
+		Level: level.Name,
+		Email: user.Email,
+		Name:  user.Name,
+	}
+
+	return c.JSON(http.StatusOK, output)
+}
+
+func (pc PokemonControllers) Login(c echo.Context) error {
+	//get user's input
+	input_user := models.User{}
+	c.Bind(&input_user)
+
+	//check is data nil?
+	if input_user.Email == "" || input_user.Password == "" {
+		return c.JSON(http.StatusBadRequest, "Maaf, Dimohon Untuk Melengkapi Semua Data.")
+	}
+
+	//compare password on form with db
+	get_pwd, x := pc.Repositories.GetPassword(input_user.Email) //get password
+	if x != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	err := bcrypt.CompareHashAndPassword([]byte(get_pwd), []byte(input_user.Password))
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, "User Unauthorized. Email or Password not equal")
+	}
+
+	//login
+	user, err := pc.Repositories.Login(input_user.Email)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+
+	//get level name
+	level, err := pc.Repositories.GetLevel(int(user.LevelID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+
+	//customize output
+	output := UserOutput1{
+		ID:    user.ID,
+		Level: level.Name,
+		Email: user.Email,
+		Name:  user.Name,
+		Token: user.Token,
+	}
+
+	return c.JSON(http.StatusOK, output)
+}
+
+func (pc PokemonControllers) GetProfile(c echo.Context) error {
+	//get id user login
+	logged_in_user_id := middleware.ExtractToken(c)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+
+	//get customer by id
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+
+	//get level name
+	level, err := pc.Repositories.GetLevel(int(user.LevelID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+
+	//customize output
+	output := UserOutput{
+		ID:    user.ID,
+		Level: level.Name,
+		Email: user.Email,
+		Name:  user.Name,
+	}
+
+	return c.JSON(http.StatusOK, output)
+}
+
+func (pc PokemonControllers) GetProfileTesting() echo.HandlerFunc {
+	return pc.GetProfile
+}
+
+func (pc PokemonControllers) Logout(c echo.Context) error {
+	//get id user login
+	logged_in_user_id := middleware.ExtractToken(c)
+	if logged_in_user_id == 0 {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Please login first")
+	}
+
+	//get customer by id
+	user, err := pc.Repositories.GetUserById(logged_in_user_id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+	user.Token = ""
+	c.Bind(&user)
+	customer_updated, err := pc.Repositories.UpdateUser(user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "cannot logout",
+		})
+	}
+
+	//get level name
+	level, err := pc.Repositories.GetLevel(int(customer_updated.LevelID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Gagal Mendapatkan Data")
+	}
+
+	//customize output
+	output := UserOutput1{
+		ID:    user.ID,
+		Level: level.Name,
+		Email: user.Email,
+		Name:  user.Name,
+		Token: user.Token,
+	}
+
+	return c.JSON(http.StatusOK, output)
 }

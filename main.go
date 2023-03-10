@@ -19,6 +19,7 @@ func main() {
 
 	utils.InitialMigrate(configs, db)
 
+	seeders.LevelSeeder(db)
 	seeders.SeasonSeeder(db)
 	seeders.CompetitionSeeder(db)
 	seeders.ScoreSeeder(db)

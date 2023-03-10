@@ -35,26 +35,35 @@ func InitDB(config *configs.ServerConfig) *gorm.DB {
 
 func InitialMigrate(config *configs.ServerConfig, db *gorm.DB) {
 	if config.Mode == "DEV" {
+		db.Migrator().DropTable(&models.Level{})
+		db.Migrator().DropTable(&models.User{})
 		db.Migrator().DropTable(&models.Score{})
 		db.Migrator().DropTable(&models.Competition{})
 		db.Migrator().DropTable(&models.Season{})
 		db.Migrator().DropTable(&models.Blacklist{})
+
 		// db.Migrator().DropTable(&models.Pokemon{})
 
+		db.AutoMigrate(&models.Level{})
+		db.AutoMigrate(&models.User{})
 		db.AutoMigrate(&models.Score{})
 		db.AutoMigrate(&models.Competition{})
 		db.AutoMigrate(&models.Season{})
 		db.AutoMigrate(&models.Blacklist{})
+
 		// db.AutoMigrate(&models.Pokemon{})
 
 		db.Migrator().DropColumn(&models.Score{}, "TotalPoints")
 		db.Migrator().DropColumn(&models.Score{}, "SeasonId")
 
 	} else {
+		db.AutoMigrate(&models.Level{})
+		db.AutoMigrate(&models.User{})
 		db.AutoMigrate(&models.Score{})
 		db.AutoMigrate(&models.Competition{})
 		db.AutoMigrate(&models.Season{})
 		db.AutoMigrate(&models.Blacklist{})
+
 		// db.AutoMigrate(&models.Pokemon{})
 	}
 
