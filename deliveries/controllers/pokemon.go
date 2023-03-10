@@ -25,7 +25,7 @@ func NewPokemonControllers(repositories repositories.PokemonRepositoriesInterfac
 	return &PokemonControllers{Repositories: repositories}
 }
 
-func (pc PokemonControllers) GetAll(ctx echo.Context) error {
+func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
 	response := Response{}
 
 	page := ctx.QueryParam("page")
@@ -54,7 +54,7 @@ func (pc PokemonControllers) GetAll(ctx echo.Context) error {
 
 	fmt.Println("-- DATA OFFSET --")
 	fmt.Println("=", offset)
-	dataGetAll, err := pc.Repositories.GetAll(limit, offset)
+	dataGetAll, err := pc.Repositories.GetPokemons(limit, offset)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
@@ -98,6 +98,47 @@ func (pc PokemonControllers) GetAll(ctx echo.Context) error {
 	// fmt.Println("=", pokemons)
 
 	return ctx.JSON(http.StatusOK, response.Found(pokemons))
+}
+
+func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
+	response := Response{}
+
+	search := ctx.QueryParam("search")
+	if search == "" {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter Search Tidak Boleh Kosong."))
+	}
+
+	data, err := pc.Repositories.GetPokemon(search)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	fmt.Println("-- DATA GET ALL --")
+	fmt.Println("=", data)
+
+	abilities := []string{}
+	for _, vData := range data.Abilities {
+		data := vData.Ability.Name
+
+		abilities = append(abilities, data)
+	}
+
+	pokemon := PokemonData{
+		Id:             data.Id,
+		Name:           data.Name,
+		Abilities:      abilities,
+		Height:         data.Height,
+		Weight:         data.Weight,
+		BaseExperience: data.BaseExperience,
+	}
+
+	if data.Id == 0 {
+		return ctx.JSON(http.StatusNotFound, response.NotFound())
+	}
+	// fmt.Println("-- DATA POKEMON --")
+	// fmt.Println("=", pokemons)
+
+	return ctx.JSON(http.StatusOK, response.Found(pokemon))
 }
 
 func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
@@ -144,7 +185,7 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 	}
 	for _, vData := range listPokemons {
 		//CHECKING AVAILABLE POKEMON ID
-		availablePokemons, err := pc.Repositories.GetByString(vData)
+		availablePokemons, err := pc.Repositories.GetPokemon(vData)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 		}
@@ -222,27 +263,27 @@ func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 	for _, vData := range dataCompetition {
 
 		id := vData.ID
-		pokemon1st, err := pc.Repositories.GetByString(vData.Rank1st)
+		pokemon1st, err := pc.Repositories.GetPokemon(vData.Rank1st)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon1st :"+err.Error()))
 		}
 
-		pokemon2nd, err := pc.Repositories.GetByString(vData.Rank2nd)
+		pokemon2nd, err := pc.Repositories.GetPokemon(vData.Rank2nd)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon2nd :"+err.Error()))
 		}
 
-		pokemon3rd, err := pc.Repositories.GetByString(vData.Rank3rd)
+		pokemon3rd, err := pc.Repositories.GetPokemon(vData.Rank3rd)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon3rd :"+err.Error()))
 		}
 
-		pokemon4th, err := pc.Repositories.GetByString(vData.Rank4th)
+		pokemon4th, err := pc.Repositories.GetPokemon(vData.Rank4th)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon4th :"+err.Error()))
 		}
 
-		pokemon5th, err := pc.Repositories.GetByString(vData.Rank5th)
+		pokemon5th, err := pc.Repositories.GetPokemon(vData.Rank5th)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("pokemon5th :"+err.Error()))
 		}
@@ -311,7 +352,7 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 
 		id := vData.ID
 		pokmeonId := vData.PokemonId
-		pokemon, err := pc.Repositories.GetByString(pokmeonId)
+		pokemon, err := pc.Repositories.GetPokemon(pokmeonId)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 		}
@@ -415,7 +456,7 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 
 		id := vData.ID
 		pokmeonId := vData.PokemonId
-		pokemon, err := pc.Repositories.GetByString(pokmeonId)
+		pokemon, err := pc.Repositories.GetPokemon(pokmeonId)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 		}

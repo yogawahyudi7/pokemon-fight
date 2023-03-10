@@ -24,9 +24,9 @@ type CompetitionScoreTrx struct {
 
 type PokemonRepositoriesInterface interface {
 	//POKEMON
-	GetAll(limit, offset string) (data models.Pokemons, err error)
+	GetPokemons(limit, offset string) (data models.Pokemons, err error)
 	GetByUrl(url string) (data models.Pokemon, err error)
-	GetByString(str interface{}) (data models.Pokemon, err error)
+	GetPokemon(str interface{}) (data models.Pokemon, err error)
 	//TODO: setting login dan search by name
 	//SEASON
 	AddSeason(params models.Season) (err error)
@@ -58,7 +58,7 @@ func NewPokemonRepositories(db *gorm.DB) *PokemonRepositories {
 	}
 }
 
-func (pr *PokemonRepositories) GetAll(limit, offset string) (data models.Pokemons, err error) {
+func (pr *PokemonRepositories) GetPokemons(limit, offset string) (data models.Pokemons, err error) {
 
 	api := constants.PokemonAPIV2
 	path := fmt.Sprintf("pokemon?limit=%v&offset=%v", limit, offset)
@@ -113,7 +113,7 @@ func (pr *PokemonRepositories) GetByUrl(url string) (data models.Pokemon, err er
 	return data, err
 }
 
-func (pr *PokemonRepositories) GetByString(str interface{}) (data models.Pokemon, err error) {
+func (pr *PokemonRepositories) GetPokemon(str interface{}) (data models.Pokemon, err error) {
 
 	api := constants.PokemonAPIV2
 	path := fmt.Sprintf("pokemon/%v", str)
