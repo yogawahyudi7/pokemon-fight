@@ -110,6 +110,22 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 	rank5th := ctx.FormValue("rank_5th")
 	seasonId := ctx.FormValue("season_id")
 
+	//VALIDASI NUMERIC
+	formValue := []string{
+		rank1st,
+		rank2nd,
+		rank3rd,
+		rank4th,
+		rank5th,
+		seasonId,
+	}
+	for _, vData := range formValue {
+		err := validate.Var(vData, "number")
+		if err != nil {
+			return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [rank...] Hanya Boleh Disi Dengan Angka."))
+		}
+	}
+
 	// fmt.Println("rank1st", rank1st)
 
 	rank1stInt, _ := strconv.Atoi(rank1st)
@@ -127,7 +143,6 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 		rank5thInt,
 	}
 	for _, vData := range listPokemons {
-
 		//CHECKING AVAILABLE POKEMON ID
 		availablePokemons, err := pc.Repositories.GetByString(vData)
 		if err != nil {

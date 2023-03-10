@@ -27,19 +27,19 @@ type PokemonRepositoriesInterface interface {
 	GetAll(limit, offset string) (data models.Pokemons, err error)
 	GetByUrl(url string) (data models.Pokemon, err error)
 	GetByString(str interface{}) (data models.Pokemon, err error)
-
+	//TODO: setting login dan search by name
 	//SEASON
 	AddSeason(params models.Season) (err error)
 	GetSeasons() (data []models.Season, err error)
 	GetSeasonById(id int) (data models.Season, err error)
 
 	//COMPETITION
-	AddCompetition(params models.Competition) (data models.Competition, err error)
-	AddScore(params models.Score) (data models.Score, err error)
+	// AddCompetition(params models.Competition) (data models.Competition, err error)
+	// AddScore(params models.Score) (data models.Score, err error)
 	AddCompetitionScoreTrx(params models.Competition) (data models.Competition, err error)
 	GetCompetitions(seasonId, filterScore int) (data []models.Competition, err error)
 	GetScores(seasonId int) (data []models.Score, err error)
-	GetCompetitionsScore() (data []models.Competition, err error)
+	// GetCompetitionsScore() (data []models.Competition, err error)
 
 	//BLACKLIST
 	AddBlackList(pokemonId int) (err error)
