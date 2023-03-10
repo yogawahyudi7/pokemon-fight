@@ -119,25 +119,36 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 	rank5thInt, _ := strconv.Atoi(rank5th)
 	seasonIdInt, _ := strconv.Atoi(seasonId)
 
-	//CHECK BLACK LIST
-	blacklistParams := []int{
+	listPokemons := []int{
 		rank1stInt,
 		rank2ndInt,
 		rank3rdInt,
 		rank4thInt,
 		rank5thInt,
 	}
-	for _, vData := range blacklistParams {
+	for _, vData := range listPokemons {
+
+		//CHECKING AVAILABLE POKEMON ID
+		availablePokemons, err := pc.Repositories.GetByString(vData)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+		}
+
+		fmt.Println(availablePokemons)
+		if availablePokemons.Id == 0 {
+			responseMessage := fmt.Sprintf("Maaf, Pokemon Dengan Id [%v] Tidak Ditemukan.", vData)
+			return ctx.JSON(http.StatusBadRequest, response.BadRequest(responseMessage))
+
+		}
+		//CHECK BLACK LIST
 		blacklist, err := pc.Repositories.GetBlackListById(vData)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 		}
 
-		fmt.Println("DISNIIIII")
-		fmt.Println("LEN", len(blacklist))
 		fmt.Println(blacklist)
 		if len(blacklist) > 0 {
-			responseMessage := fmt.Sprintf("Maaf, Pokemon Dengan Id [%v] Terdaftar Dalam Blacklist", vData)
+			responseMessage := fmt.Sprintf("Maaf, Pokemon Dengan Id [%v] Terdaftar Dalam Blacklist.", vData)
 			return ctx.JSON(http.StatusBadRequest, response.BadRequest(responseMessage))
 
 		}
