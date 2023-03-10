@@ -8,12 +8,24 @@
 - [POKEMON-FIGHT:CLUB](#pokemon-fightclub)
   - [Table of Content](#table-of-content)
     - [API Documentation](#api-documentation)
+  - [System Design](#system-design)
+    - [ERD](#erd)
+    - [Layered Architecture](#layered-architecture)
   - [Getting Started](#getting-started)
     - [Installing](#installing)
 
-### API Documentation
 
+### API Documentation
+![API Documentation](https://raw.githubusercontent.com/yogawahyudi7/POKEMON-FIGHT/develop/docs/postman.png)
 Application Programming Interface is available at [POSTMAN.](https://documenter.getpostman.com/view/16411992/2s93Jrx5NY)
+
+## System Design
+
+### ERD
+![Pokemon Fight Club - ERD](https://raw.githubusercontent.com/yogawahyudi7/POKEMON-FIGHT/develop/docs/erd3.png)
+
+### Layered Architecture
+![Pokemon Fight Club - Layered Architecture](https://raw.githubusercontent.com/yogawahyudi7/POKEMON-FIGHT/develop/docs/layeredStructure.png)
 
 ## Getting Started
 
