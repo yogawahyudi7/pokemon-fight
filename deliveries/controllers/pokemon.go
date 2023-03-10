@@ -247,13 +247,11 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 	response := Response{}
 
-	seasonId := ctx.QueryParam("seasonId")
-	filterScore := ctx.QueryParam("filterScore")
+	seasonId := ctx.QueryParam("season_id")
 
 	seasonIdInt, _ := strconv.Atoi(seasonId)
-	filterScoreInt, _ := strconv.Atoi(filterScore)
 
-	dataCompetition, err := pc.Repositories.GetCompetitions(seasonIdInt, filterScoreInt)
+	dataCompetition, err := pc.Repositories.GetCompetitions(seasonIdInt)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}

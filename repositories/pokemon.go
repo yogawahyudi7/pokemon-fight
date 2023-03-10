@@ -27,19 +27,16 @@ type PokemonRepositoriesInterface interface {
 	GetPokemons(limit, offset string) (data models.Pokemons, err error)
 	GetByUrl(url string) (data models.Pokemon, err error)
 	GetPokemon(str interface{}) (data models.Pokemon, err error)
-	//TODO: setting login dan search by name
+
 	//SEASON
 	AddSeason(params models.Season) (err error)
 	GetSeasons() (data []models.Season, err error)
 	GetSeasonById(id int) (data models.Season, err error)
 
 	//COMPETITION
-	// AddCompetition(params models.Competition) (data models.Competition, err error)
-	// AddScore(params models.Score) (data models.Score, err error)
 	AddCompetitionScoreTrx(params models.Competition) (data models.Competition, err error)
-	GetCompetitions(seasonId, filterScore int) (data []models.Competition, err error)
+	GetCompetitions(seasonId int) (data []models.Competition, err error)
 	GetScores(seasonId int) (data []models.Score, err error)
-	// GetCompetitionsScore() (data []models.Competition, err error)
 
 	//BLACKLIST
 	AddBlackList(pokemonId int) (err error)
@@ -142,45 +139,6 @@ func (pr *PokemonRepositories) GetPokemon(str interface{}) (data models.Pokemon,
 	return data, err
 }
 
-func (pr *PokemonRepositories) AddCompetition(params models.Competition) (data models.Competition, err error) {
-
-	data = models.Competition{
-		SeasonId: params.SeasonId,
-	}
-
-	query := pr.db.Debug()
-
-	err = query.Create(&data).Error
-	if err != nil {
-		return data, err
-	}
-
-	return data, err
-}
-
-func (pr *PokemonRepositories) AddScore(params models.Score) (data models.Score, err error) {
-
-	data = models.Score{
-		PokemonId:     params.PokemonId,
-		CompetitionId: params.CompetitionId,
-		Rank1stCount:  params.Rank1stCount,
-		Rank2ndCount:  params.Rank2ndCount,
-		Rank3rdCount:  params.Rank3rdCount,
-		Rank4thCount:  params.Rank4thCount,
-		Rank5thCount:  params.Rank5thCount,
-		Points:        params.Points,
-	}
-
-	query := pr.db.Debug()
-
-	err = query.Create(&data).Error
-	if err != nil {
-		return data, err
-	}
-
-	return data, err
-}
-
 func (pr *PokemonRepositories) AddCompetitionScoreTrx(params models.Competition) (data models.Competition, err error) {
 
 	competition := models.Competition{
@@ -277,7 +235,7 @@ func (pr *PokemonRepositories) AddCompetitionScoreTrx(params models.Competition)
 	return data, err
 }
 
-func (pr *PokemonRepositories) GetCompetitions(seasonId, filterScore int) (data []models.Competition, err error) {
+func (pr *PokemonRepositories) GetCompetitions(seasonId int) (data []models.Competition, err error) {
 
 	query := pr.db.Debug().Preload("DataScore")
 
@@ -285,46 +243,11 @@ func (pr *PokemonRepositories) GetCompetitions(seasonId, filterScore int) (data 
 		query = query.Where("season_id = ?", seasonId)
 	}
 
-	// if filterScore == 1 {
-	// 	query = query.Preload("DataScore", func(db *gorm.DB) *gorm.DB {
-	// 		return db.Order("points asc")
-	// 	}).Find(&data)
-	// } else if filterScore == 2 {
-	// 	query = query.Preload("DataScore", func(db *gorm.DB) *gorm.DB {
-	// 		return db.Order("points desc")
-	// 	}).Find(&data)
-	// } else {
-	// query = query.Find(&data)
-	// }
-
 	query = query.Order("season_id DESC")
 
 	query = query.Find(&data)
 
 	err = query.Error
-
-	if query.Error != nil {
-		return data, err
-	}
-
-	return data, err
-}
-
-func (pr *PokemonRepositories) GetCompetitionsScore() (data []models.Competition, err error) {
-
-	// var
-	selectedField := []string{
-		"sc.pokemon_id as pokemon_id",
-	}
-	query := pr.db.Debug()
-
-	query = query.Table(models.Competition{}.TableName() + " AS co")
-
-	query = query.Select(selectedField)
-
-	query = query.Joins("JOIN " + models.Score{}.TableName() + " AS sc on sc.CompetiionId = co.Id")
-
-	err = query.Find(&data).Error
 
 	if query.Error != nil {
 		return data, err
