@@ -181,6 +181,10 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 		seasonId,
 	}
 	for _, vData := range formValue {
+		if vData == "" {
+			return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [rank...] Tidak Boleh Kosong."))
+		}
+
 		err := validate.Var(vData, "number")
 		if err != nil {
 			return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [rank...] Hanya Boleh Disi Dengan Angka."))
