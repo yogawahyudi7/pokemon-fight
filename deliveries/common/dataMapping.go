@@ -1,4 +1,4 @@
-package controllers
+package common
 
 type Stats struct {
 	Name     string `json:"name"`

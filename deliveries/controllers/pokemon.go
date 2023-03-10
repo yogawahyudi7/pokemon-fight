@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"pokemon-fight/constants"
+	"pokemon-fight/deliveries/common"
 	"pokemon-fight/helpers"
 	"pokemon-fight/models"
 	"pokemon-fight/repositories"
@@ -26,7 +27,7 @@ func NewPokemonControllers(repositories repositories.PokemonRepositoriesInterfac
 }
 
 func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	page := ctx.QueryParam("page")
 	fmt.Println("PAGE :", page)
@@ -62,7 +63,7 @@ func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
 	// fmt.Println("-- DATA GET ALL --")
 	// fmt.Println("=", dataGetAll)
 
-	pokemons := []PokemonData{}
+	pokemons := []common.PokemonData{}
 
 	for _, data := range dataGetAll.Results {
 		url := data.Url
@@ -80,7 +81,7 @@ func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
 			abilities = append(abilities, data)
 		}
 
-		data := PokemonData{
+		data := common.PokemonData{
 			Id:             pokemon.Id,
 			Name:           pokemon.Name,
 			Abilities:      abilities,
@@ -101,7 +102,7 @@ func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
 }
 
 func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	search := ctx.QueryParam("search")
 	if search == "" {
@@ -130,9 +131,9 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 		types = append(types, data)
 	}
 
-	stats := []Stats{}
+	stats := []common.Stats{}
 	for _, vData := range data.Stats {
-		data := Stats{
+		data := common.Stats{
 			Name:     vData.Stat.Name,
 			BaseStat: vData.BaseStat,
 			Effort:   vData.Effort,
@@ -141,7 +142,7 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 		stats = append(stats, data)
 	}
 
-	pokemon := PokemonData{
+	pokemon := common.PokemonData{
 		Id:             data.Id,
 		Name:           data.Name,
 		Abilities:      abilities,
@@ -162,7 +163,7 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 }
 
 func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	rank1st := ctx.FormValue("rank_1st")
 	rank2nd := ctx.FormValue("rank_2nd")
@@ -256,7 +257,7 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
-	competition := CompetitionData{
+	competition := common.CompetitionData{
 		Id:       int(conpetition.ID),
 		Rank1st:  conpetition.Rank1st,
 		Rank2nd:  conpetition.Rank2nd,
@@ -269,7 +270,7 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 }
 
 func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	seasonId := ctx.QueryParam("season_id")
 
@@ -280,7 +281,7 @@ func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
-	result := []DataCompetition{}
+	result := []common.DataCompetition{}
 
 	for _, vData := range dataCompetition {
 
@@ -315,29 +316,29 @@ func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 			return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("season :"+err.Error()))
 		}
 
-		data := DataCompetition{
+		data := common.DataCompetition{
 			Id: int(id),
-			Rank1st: Pokemon{
+			Rank1st: common.Pokemon{
 				Id:   pokemon1st.Id,
 				Name: pokemon1st.Name,
 			},
-			Rank2nd: Pokemon{
+			Rank2nd: common.Pokemon{
 				Id:   pokemon2nd.Id,
 				Name: pokemon2nd.Name,
 			},
-			Rank3rd: Pokemon{
+			Rank3rd: common.Pokemon{
 				Id:   pokemon3rd.Id,
 				Name: pokemon3rd.Name,
 			},
-			Rank4th: Pokemon{
+			Rank4th: common.Pokemon{
 				Id:   pokemon4th.Id,
 				Name: pokemon4th.Name,
 			},
-			Rank5th: Pokemon{
+			Rank5th: common.Pokemon{
 				Id:   pokemon5th.Id,
 				Name: pokemon5th.Name,
 			},
-			Season: Season{
+			Season: common.Season{
 				Id:        int(season.ID),
 				Name:      season.Name,
 				StartDate: season.StartDate.Format(constants.LayoutYMD),
@@ -357,7 +358,7 @@ func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 }
 
 func (pc PokemonControllers) GetScores(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	seasonId := ctx.QueryParam("season_id")
 
@@ -368,7 +369,7 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
-	result := []DataScores{}
+	result := []common.DataScores{}
 
 	for _, vData := range dataScore {
 
@@ -388,7 +389,7 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 			}
 		}
 
-		pokemonData := Pokemon{
+		pokemonData := common.Pokemon{
 			Id:   pokemon.Id,
 			Name: pokemon.Name,
 		}
@@ -396,14 +397,14 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 		startDate := season.StartDate.Format(constants.LayoutYMD)
 		endDate := season.EndDate.Format(constants.LayoutYMD)
 
-		seasonData := Season{
+		seasonData := common.Season{
 			Id:        int(season.ID),
 			Name:      season.Name,
 			StartDate: startDate,
 			EndDate:   endDate,
 		}
 
-		data := DataScores{
+		data := common.DataScores{
 			Id:           int(id),
 			Pokemon:      pokemonData,
 			Rank1stCount: vData.Rank1stCount,
@@ -430,7 +431,7 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 }
 
 func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	pokemonId := ctx.QueryParam("pokemon_id")
 
@@ -462,7 +463,7 @@ func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
 }
 
 func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	pokemonId := ctx.FormValue("pokemon_id")
 
@@ -473,7 +474,7 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
-	result := []DataScores{}
+	result := []common.DataScores{}
 
 	for _, vData := range data {
 
@@ -493,7 +494,7 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 			}
 		}
 
-		pokemonData := Pokemon{
+		pokemonData := common.Pokemon{
 			Id:   pokemon.Id,
 			Name: pokemon.Name,
 		}
@@ -509,14 +510,14 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 		// 	endDate = ""
 		// }
 
-		seasonData := Season{
+		seasonData := common.Season{
 			Id:        int(season.ID),
 			Name:      season.Name,
 			StartDate: startDate,
 			EndDate:   endDate,
 		}
 
-		data := DataScores{
+		data := common.DataScores{
 			Id:           int(id),
 			Pokemon:      pokemonData,
 			Rank1stCount: vData.Rank1stCount,
@@ -544,7 +545,7 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 }
 
 func (pc PokemonControllers) AddSeason(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	name := ctx.FormValue("name")
 	startDate := ctx.FormValue("start_date")
@@ -583,14 +584,14 @@ func (pc PokemonControllers) AddSeason(ctx echo.Context) error {
 }
 
 func (pc PokemonControllers) GetSeasons(ctx echo.Context) error {
-	response := Response{}
+	response := common.Response{}
 
 	seasonData, err := pc.Repositories.GetSeasons()
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
-	data := []Season{}
+	data := []common.Season{}
 
 	for _, vData := range seasonData {
 
@@ -599,7 +600,7 @@ func (pc PokemonControllers) GetSeasons(ctx echo.Context) error {
 		startDate := vData.StartDate.Format(constants.LayoutYMD)
 		endDate := vData.EndDate.Format(constants.LayoutYMD)
 
-		seasonData := Season{
+		seasonData := common.Season{
 			Id:        int(id),
 			Name:      name,
 			StartDate: startDate,
