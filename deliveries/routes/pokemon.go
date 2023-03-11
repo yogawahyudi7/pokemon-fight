@@ -21,12 +21,14 @@ func RegisterPath(e *echo.Echo, pokemon *controllers.PokemonControllers) {
 	//-----------Pengedar
 	route.POST("/pengedar/register", pokemon.RegisterPengedar)
 
+	//LOGIN
 	route.POST("/login", pokemon.Login)
-	route.PUT("/logout", pokemon.Logout)
 
-	//-------------------------------------------------------
 	auth := route.Group("")
 	auth.Use(middleware.JWT([]byte(constants.SecretJWT)))
+
+	//LOGOUT
+	auth.PUT("/logout", pokemon.Logout)
 
 	auth.GET("/pokemons", pokemon.GetPokemons) //OPERASIONAL
 	auth.GET("/pokemon", pokemon.GetPokemon)   //OPERASIONAL
