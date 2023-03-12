@@ -58,3 +58,11 @@ type DataScores struct {
 	Rank5thCount int         `json:"rank_5th_count"`
 	Season       interface{} `json:"season,omitempty"`
 }
+
+type UserOutput struct {
+	ID    uint   `json:"id"`
+	Level string `json:"level"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	Token string `json:"token,omitempty"`
+}

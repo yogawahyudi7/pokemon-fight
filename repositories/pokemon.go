@@ -450,7 +450,7 @@ func (pr *PokemonRepositories) AddSeason(params models.Season) (err error) {
 func (pr *PokemonRepositories) CheckEmail(email string) (bool, error) {
 	var user models.User
 
-	if err := pr.db.Model(&user).Where("email=?", email).First(&user).Error; err != nil {
+	if err := pr.db.Model(&user).Where("email = ?", email).First(&user).Error; err != nil {
 		return false, err
 	}
 
@@ -463,7 +463,7 @@ func (pr *PokemonRepositories) CheckEmail(email string) (bool, error) {
 
 func (pr *PokemonRepositories) GetLevel(id int) (models.Level, error) {
 	var level models.Level
-	if err := pr.db.Where("id=?", id).First(&level).Error; err != nil {
+	if err := pr.db.Where("id = ?", id).First(&level).Error; err != nil {
 		return level, err
 	}
 
@@ -472,19 +472,26 @@ func (pr *PokemonRepositories) GetLevel(id int) (models.Level, error) {
 
 func (pr *PokemonRepositories) GetPassword(email string) (string, error) {
 	var user models.User
-	if err := pr.db.Where("email = ?", email).First(&user).Error; err != nil {
+
+	query := pr.db.Debug()
+
+	query = query.Where("email = ?", email)
+
+	err := query.First(&user).Error
+
+	if err != nil {
 		return user.Password, err
 	}
 	return user.Password, nil
 }
 
-func (pr *PokemonRepositories) GetUserById(id int) (models.User, error) {
-	var user models.User
-	if err := pr.db.Where("id=?", id).First(&user).Error; err != nil {
-		return user, err
+func (pr *PokemonRepositories) GetUserById(id int) (data models.User, err error) {
+
+	if err = pr.db.Where("id = ?", id).First(&data).Error; err != nil {
+		return data, err
 	}
 
-	return user, nil
+	return data, err
 }
 
 func (pr *PokemonRepositories) Register(user models.User) (models.User, error) {

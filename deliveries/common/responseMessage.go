@@ -23,6 +23,22 @@ func (r Response) Found(data interface{}) Response {
 	}
 }
 
+func (r Response) Login(data interface{}) Response {
+	return Response{
+		Code:    200,
+		Message: "Berhasil Login.",
+		Data:    data,
+	}
+}
+
+func (r Response) Logout(data interface{}) Response {
+	return Response{
+		Code:    200,
+		Message: "Berhasil Logout.",
+		Data:    data,
+	}
+}
+
 func (r Response) BadRequest(message string) Response {
 	return Response{
 		Code:    400,
@@ -52,5 +68,47 @@ func (r Response) InternalServerError(err string) Response {
 		Message: "Maaf, Server Sedang Dalam Perbaikan Cobalah Beberapa Saat Lagi.",
 		Data:    nil,
 		Error:   err,
+	}
+}
+
+func (r Response) Unauthorized(code int) Response {
+
+	switch code {
+	case 2:
+		return Response{
+			Code:    401,
+			Message: "Maaf, User Tidak Valid Mohon Untuk Mencoba Login Kembali.",
+			Data:    nil,
+		}
+	case 3:
+		return Response{
+			Code:    401,
+			Message: "Maaf, User Tidak Valid Mohon Login Menggunakan User Lain.",
+			Data:    nil,
+		}
+	case 1:
+		return Response{
+			Code:    401,
+			Message: "Maaf, Dimohon Untuk Menginputan Autorisasi Yang Valid",
+			Data:    nil,
+		}
+	case 4:
+		return Response{
+			Code:    401,
+			Message: "Maaf, Email Atau Password Salah.",
+			Data:    nil,
+		}
+	case 5:
+		return Response{
+			Code:    401,
+			Message: "Maaf, Level Belum Terdaftar Pada Server.",
+			Data:    nil,
+		}
+	}
+
+	return Response{
+		Code:    401,
+		Message: "Sorry, This Code Unassigned",
+		Data:    nil,
 	}
 }
