@@ -806,6 +806,11 @@ func (pc PokemonControllers) RegisterBos(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Dimohon Untuk Melengkapi Semua Data."))
 	}
 
+	err := validate.Var(input_user.Email, "email")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [email] Tidak Sesuai Format. Ex:email@xxx.com"))
+	}
+
 	//check is email exists?
 	is_email_exists, _ := pc.Repositories.CheckEmail(input_user.Email)
 	if is_email_exists {
@@ -853,6 +858,11 @@ func (pc PokemonControllers) RegisterOperasional(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Dimohon Untuk Melengkapi Semua Data."))
 	}
 
+	err := validate.Var(input_user.Email, "email")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [email] Tidak Sesuai Format. Ex:email@xxx.com"))
+	}
+
 	//check is email exists?
 	is_email_exists, _ := pc.Repositories.CheckEmail(input_user.Email)
 	if is_email_exists {
@@ -898,6 +908,11 @@ func (pc PokemonControllers) RegisterPengedar(ctx echo.Context) error {
 	//check is data nil?
 	if input_user.Email == "" || input_user.Password == "" || input_user.Name == "" || input_user.LevelId == 0 {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Dimohon Untuk Melengkapi Semua Data."))
+	}
+
+	err := validate.Var(input_user.Email, "email")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [email] Tidak Sesuai Format. Ex:email@xxx.com"))
 	}
 
 	//check is email exists?
