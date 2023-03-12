@@ -27,7 +27,10 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.2
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/jinzhu/now v1.1.5
+	github.com/labstack/echo-jwt v0.0.0-20221127215225-c84d41a71003
+	github.com/labstack/echo-jwt/v4 v4.1.0
 	github.com/leodido/go-urn v1.2.1 // indirect
 	golang.org/x/crypto v0.6.0
 	golang.org/x/net v0.7.0 // indirect
