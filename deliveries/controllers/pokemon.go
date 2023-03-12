@@ -38,6 +38,9 @@ func (pc PokemonControllers) GetPokemons(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {
@@ -129,6 +132,9 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {
@@ -206,6 +212,9 @@ func (pc PokemonControllers) AddCompetition(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {
@@ -329,6 +338,9 @@ func (pc PokemonControllers) GetCompetitions(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {
@@ -433,6 +445,9 @@ func (pc PokemonControllers) GetScores(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {
@@ -522,6 +537,9 @@ func (pc PokemonControllers) AddBlackList(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {
@@ -570,6 +588,9 @@ func (pc PokemonControllers) GetBlackList(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {
@@ -668,6 +689,9 @@ func (pc PokemonControllers) AddSeason(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {
@@ -723,6 +747,9 @@ func (pc PokemonControllers) GetSeasons(ctx echo.Context) error {
 	}
 	user, err := pc.Repositories.GetUserById(tokenUserId)
 	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data User Id Tidak Ditemukan Pada Server"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Data Tidak Ditemukan Pada Server"))
 	}
 	if user.Token == "" {

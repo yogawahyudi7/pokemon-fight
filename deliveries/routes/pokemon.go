@@ -1,11 +1,11 @@
 package routes
 
 import (
-	"pokemon-fight/constants"
 	"pokemon-fight/deliveries/controllers"
+	"pokemon-fight/deliveries/middleware"
 
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 func RegisterPath(e *echo.Echo, pokemon *controllers.PokemonControllers) {
@@ -25,7 +25,7 @@ func RegisterPath(e *echo.Echo, pokemon *controllers.PokemonControllers) {
 	route.POST("/login", pokemon.Login)
 
 	auth := route.Group("")
-	auth.Use(middleware.JWT([]byte(constants.SecretJWT)))
+	auth.Use(echojwt.WithConfig(echojwt.Config(middleware.MiddlewareConfig())))
 
 	//LOGOUT
 	auth.PUT("/logout", pokemon.Logout)
