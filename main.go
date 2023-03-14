@@ -10,6 +10,7 @@ import (
 	"pokemon-fight/utils"
 
 	"github.com/labstack/echo/v4"
+	middlewares "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -24,14 +25,33 @@ func main() {
 	seeders.CompetitionSeeder(db)
 	seeders.ScoreSeeder(db)
 
+	userRepositories := repositories.NewUserRepositories(db)
 	pokemonRepositories := repositories.NewPokemonRepositories(db)
-	pokemonControllers := controllers.NewPokemonControllers(pokemonRepositories)
+	competitionRepositories := repositories.NewCompetitionRepositories(db)
+	scoreRepositories := repositories.NewScoreRepositories(db)
+	seasonRepositories := repositories.NewSeasonRepositories(db)
+	blacklistRepositories := repositories.NewBlacklistRepositories(db)
+
+	userControllers := controllers.NewUserControllers(userRepositories)
+	pokemonControllers := controllers.NewPokemonControllers(pokemonRepositories, userRepositories)
+	competitionControllers := controllers.NewCompetitionControllers(competitionRepositories, pokemonRepositories, seasonRepositories, userRepositories, blacklistRepositories)
+	scoreControllers := controllers.NewScoreControllers(blacklistRepositories, userRepositories, pokemonRepositories, seasonRepositories, scoreRepositories)
+	seasonControllers := controllers.NewSeasonControllers(blacklistRepositories, userRepositories, pokemonRepositories, seasonRepositories, scoreRepositories)
+	blacklistControllers := controllers.NewBlacklistControllers(blacklistRepositories, userRepositories, pokemonRepositories, seasonRepositories)
 
 	//echo package
 	e := echo.New()
 	middleware.LogMiddleware(e)
+	e.Pre(middlewares.RemoveTrailingSlash())
 
-	routes.RegisterPath(e, pokemonControllers)
+	path := e.Group("/v1")
+
+	routes.RegisterPathUser(path, userControllers)
+	routes.RegisterPathPokemon(path, pokemonControllers)
+	routes.RegisterPathCompetition(path, competitionControllers)
+	routes.RegisterPathScore(path, scoreControllers)
+	routes.RegisterPathSeason(path, seasonControllers)
+	routes.RegisterPathBlacklist(path, blacklistControllers)
 
 	e.Logger.Fatal(e.Start(":" + configs.Port))
 
