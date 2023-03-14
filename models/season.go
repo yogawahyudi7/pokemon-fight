@@ -8,7 +8,7 @@ import (
 
 type Season struct {
 	gorm.Model
-	Name      string
+	Name      string `gorm:"unique"`
 	StartDate time.Time
 	EndDate   time.Time
 }

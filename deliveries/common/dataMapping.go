@@ -1,9 +1,9 @@
 package common
 
 type Stats struct {
-	Name     string `json:"name"`
-	BaseStat int    `json:"base_stat"`
-	Effort   int    `json:"effort"`
+	Name     string `json:"name,omitempty"`
+	BaseStat int    `json:"base_stat,omitempty"`
+	Effort   int    `json:"effort,omitempty"`
 }
 type PokemonData struct {
 	Id             int      `json:"id"`
@@ -11,8 +11,8 @@ type PokemonData struct {
 	Abilities      []string `json:"abilities"`
 	Height         int      `json:"height"`
 	Weight         int      `json:"weight"`
-	Types          []string `json:"types"`
-	Stats          []Stats  `json:"stats"`
+	Types          []string `json:"types,omitempty"`
+	Stats          []Stats  `json:"stats,omitempty"`
 	BaseExperience int      `json:"base_experience"`
 }
 

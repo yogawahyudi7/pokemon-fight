@@ -104,6 +104,12 @@ func (r Response) Unauthorized(code int) Response {
 			Message: "Maaf, Level Belum Terdaftar Pada Server.",
 			Data:    nil,
 		}
+	case 6:
+		return Response{
+			Code:    401,
+			Message: "Data User Id Tidak Ditemukan Pada Server.",
+			Data:    nil,
+		}
 	}
 
 	return Response{

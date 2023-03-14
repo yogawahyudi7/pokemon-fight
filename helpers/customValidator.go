@@ -60,6 +60,7 @@ func ValidatorDate(params string) (code int, err string) {
 	switch {
 	case intYear < 1753:
 		return 3, ("Maaf, Tahun Pada Parameter Tanggal Tidak Boleh Kecil Dari 1753.")
+
 	}
 
 	intMonth, _ := strconv.Atoi(month)
@@ -69,11 +70,19 @@ func ValidatorDate(params string) (code int, err string) {
 	}
 
 	layoutFormat := constants.LayoutYMD
-	date, _ := time.Parse(layoutFormat, params)
+	date, errDate := time.Parse(layoutFormat, params)
+	if errDate != nil {
+		return 6, ("Maaf, Hari Pada Parameter Tanggal Tidak Sesuai Dengan Hari yang Tersedia.")
+	}
 	lastDate := fmt.Sprint(now.With(date).EndOfMonth().Format(layoutFormat))
 	splitLastDate := strings.Split(lastDate, "-")
 	lastDay := splitLastDate[2]
 	intLastDay, _ := strconv.Atoi(lastDay)
+
+	// fmt.Println("****", params)
+	// fmt.Println("****", date)
+	// fmt.Println("****", errDate)
+	// fmt.Println("****", lastDate)
 
 	intDay, _ := strconv.Atoi(day)
 	switch {
