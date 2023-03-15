@@ -26,34 +26,33 @@ func (pc UserControllers) RegisterBos(ctx echo.Context) error {
 	response := common.Response{}
 
 	//get user's input
-	input_user := models.User{}
-	input_user.LevelId = 1
-	ctx.Bind(&input_user)
+	userInput := models.User{}
+	userInput.LevelId = 1
+	ctx.Bind(&userInput)
 
 	//check is data nil?
-	if input_user.Email == "" || input_user.Password == "" || input_user.Name == "" || input_user.LevelId == 0 {
+	if userInput.Email == "" || userInput.Password == "" || userInput.Name == "" || userInput.LevelId == 0 {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Dimohon Untuk Melengkapi Semua Data."))
 	}
 
-	err := validate.Var(input_user.Email, "email")
+	err := validate.Var(userInput.Email, "email")
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [email] Tidak Sesuai Format. Ex:email@xxx.com"))
 	}
 
 	//check is email exists?
-	is_email_exists, _ := pc.Repositories.CheckEmail(input_user.Email)
+	is_email_exists, _ := pc.Repositories.CheckEmail(userInput.Email)
 	if is_email_exists {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Email Sudah Pernah Terdaftar."))
 	}
 
 	//encrypt pass user
-	convert_pwd := []byte(input_user.Password) //convert pass from string to byte
+	convert_pwd := []byte(userInput.Password) //convert pass from string to byte
 	hashed_pwd := helpers.EncryptPwd(convert_pwd)
-	input_user.Password = hashed_pwd //set new pass
+	userInput.Password = hashed_pwd //set new pass
 
-	fmt.Println("===========================", input_user.LevelId)
 	//create new user
-	user, err := pc.Repositories.Register(input_user)
+	user, err := pc.Repositories.Register(userInput)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
@@ -79,33 +78,33 @@ func (pc UserControllers) RegisterOperasional(ctx echo.Context) error {
 	response := common.Response{}
 
 	//get user's input
-	input_user := models.User{}
-	input_user.LevelId = 2
-	ctx.Bind(&input_user)
+	userInput := models.User{}
+	userInput.LevelId = 2
+	ctx.Bind(&userInput)
 
 	//check is data nil?
-	if input_user.Email == "" || input_user.Password == "" || input_user.Name == "" || input_user.LevelId == 0 {
+	if userInput.Email == "" || userInput.Password == "" || userInput.Name == "" || userInput.LevelId == 0 {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Dimohon Untuk Melengkapi Semua Data."))
 	}
 
-	err := validate.Var(input_user.Email, "email")
+	err := validate.Var(userInput.Email, "email")
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [email] Tidak Sesuai Format. Ex:email@xxx.com"))
 	}
 
 	//check is email exists?
-	is_email_exists, _ := pc.Repositories.CheckEmail(input_user.Email)
+	is_email_exists, _ := pc.Repositories.CheckEmail(userInput.Email)
 	if is_email_exists {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Email Sudah Pernah Terdaftar."))
 	}
 
 	//encrypt pass user
-	convert_pwd := []byte(input_user.Password) //convert pass from string to byte
+	convert_pwd := []byte(userInput.Password) //convert pass from string to byte
 	hashed_pwd := helpers.EncryptPwd(convert_pwd)
-	input_user.Password = hashed_pwd //set new pass
+	userInput.Password = hashed_pwd //set new pass
 
 	//create new user
-	user, err := pc.Repositories.Register(input_user)
+	user, err := pc.Repositories.Register(userInput)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
@@ -131,33 +130,33 @@ func (pc UserControllers) RegisterPengedar(ctx echo.Context) error {
 	response := common.Response{}
 
 	//get user's input
-	input_user := models.User{}
-	input_user.LevelId = 3
-	ctx.Bind(&input_user)
+	userInput := models.User{}
+	userInput.LevelId = 3
+	ctx.Bind(&userInput)
 
 	//check is data nil?
-	if input_user.Email == "" || input_user.Password == "" || input_user.Name == "" || input_user.LevelId == 0 {
+	if userInput.Email == "" || userInput.Password == "" || userInput.Name == "" || userInput.LevelId == 0 {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Dimohon Untuk Melengkapi Semua Data."))
 	}
 
-	err := validate.Var(input_user.Email, "email")
+	err := validate.Var(userInput.Email, "email")
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [email] Tidak Sesuai Format. Ex:email@xxx.com"))
 	}
 
 	//check is email exists?
-	is_email_exists, _ := pc.Repositories.CheckEmail(input_user.Email)
+	is_email_exists, _ := pc.Repositories.CheckEmail(userInput.Email)
 	if is_email_exists {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Email Sudah Pernah Terdaftar."))
 	}
 
 	//encrypt pass user
-	convert_pwd := []byte(input_user.Password) //convert pass from string to byte
+	convert_pwd := []byte(userInput.Password) //convert pass from string to byte
 	hashed_pwd := helpers.EncryptPwd(convert_pwd)
-	input_user.Password = hashed_pwd //set new pass
+	userInput.Password = hashed_pwd //set new pass
 
 	//create new user
-	user, err := pc.Repositories.Register(input_user)
+	user, err := pc.Repositories.Register(userInput)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
