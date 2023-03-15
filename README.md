@@ -1,3 +1,9 @@
+<div align="center">
+  <a href="https://raw.githubusercontent.com/yogawahyudi7/POKEMON-FIGHT/develop/docs/logo.png">
+    <img src="https://raw.githubusercontent.com/yogawahyudi7/POKEMON-FIGHT/develop/docs/logo.png">
+  </a>
+</div>
+<div>
 #  POKEMON-FIGHT:CLUB
 
 [![Go Reference](https://pkg.go.dev/badge/golang.org/x/example.svg)](https://pkg.go.dev/golang.org/x/example)
@@ -7,12 +13,40 @@
 ## Table of Content
 - [POKEMON-FIGHT:CLUB](#pokemon-fightclub)
   - [Table of Content](#table-of-content)
+  - [Features](#features)
+    - [Endpoints](#endpoints)
     - [API Documentation](#api-documentation)
   - [System Design](#system-design)
     - [ERD](#erd)
     - [Layered Architecture](#layered-architecture)
   - [Getting Started](#getting-started)
     - [Installing](#installing)
+  - [Authors](#authors)
+
+## Features
+- JWT Authentication
+- Layered Architecture
+- Dependency Injection
+- Parameters Validation
+- Blacklist Feature
+- API Consume - [POKE-API](https://pokeapi.co/)
+- Multi Role Middleware (Bos, Operasional, Pengedar)
+
+### Endpoints
+- [x] Register Bos
+- [x] Register Operasional
+- [x] Register Pengedar
+- [x] Login
+- [x] Logout
+- [x] Get all pokemon - [POKE-API](https://pokeapi.co/)
+- [x] Get pokemon by Name & ID - [POKE-API](https://pokeapi.co/)
+- [x] Add Season
+- [x] Get All Season
+- [x] Add Competition Pokemon
+- [x] Get Competitions Pokemon
+- [x] Get Scores Pokemon
+- [x] Add Blacklist pokemon
+- [x] Get Blacklist pokemon
 
 
 ### API Documentation
@@ -41,4 +75,8 @@ $ go run main.go
 ```
 
 Go to `http://localhost:7000/` to [start this application.](http://localhost:7000/)
+
+## Authors
+
+- [@yogawahyudi7](https://github.com/yogawahyudi7) - Developer
 
