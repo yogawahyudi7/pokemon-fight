@@ -16,7 +16,7 @@ import (
 func main() {
 
 	configs := configs.Get()
-	db := utils.InitDB(configs)
+	db := utils.PostgreSQL(configs)
 
 	utils.InitialMigrate(configs, db)
 

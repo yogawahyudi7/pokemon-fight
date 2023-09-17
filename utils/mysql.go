@@ -9,20 +9,50 @@ import (
 	"pokemon-fight/models"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
 )
 
 func InitDB(config *configs.ServerConfig) *gorm.DB {
 
+	set := config.Database.MySQL
 	dsnString := []string{
-		config.Database.Username, ":", config.Database.Password, "@tcp(", config.Database.Host, ":", config.Database.Port, ")/", config.Database.Name, "?parseTime=true&loc=Asia%2FJakarta&charset=utf8mb4&collation=utf8mb4_unicode_ci"}
+		set.Username, ":", set.Password, "@tcp(", set.Host, ":", set.Port, ")/", set.Name, "?parseTime=true&loc=Asia%2FJakarta&charset=utf8mb4&collation=utf8mb4_unicode_ci"}
 	dsn := strings.Join(dsnString, "")
 
 	fmt.Println("--DNS CONNECTION--")
 	fmt.Println(dsn)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{}) // open connection
+
+	if err != nil {
+		panic(err)
+	}
+
+	db.Use(dbresolver.Register(dbresolver.Config{}).SetMaxIdleConns(10).SetMaxOpenConns(100).SetConnMaxLifetime(time.Hour))
+
+	return db
+}
+
+func PostgreSQL(config *configs.ServerConfig) *gorm.DB {
+
+	set := config.Database.PostgreSQL
+
+	sslmode := "disable"
+	timeZone := "Asia/Jakarta"
+	user := set.Name
+	password := set.Password
+	host := set.Host
+	port := set.Port
+	dbName := set.Name
+	// dsn := fmt.Sprintf("host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai")
+	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=%v", host, user, password, dbName, port, sslmode, timeZone)
+
+	fmt.Println("--DNS CONNECTION--")
+	fmt.Println(dsn)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{}) // open connection
 
 	if err != nil {
 		panic(err)

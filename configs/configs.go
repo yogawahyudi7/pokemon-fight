@@ -12,12 +12,22 @@ type ServerConfig struct {
 	Port     string
 	Mode     string
 	Database struct {
-		Driver   string
-		Name     string
-		Host     string
-		Port     string
-		Username string
-		Password string
+		MySQL struct {
+			Driver   string
+			Name     string
+			Host     string
+			Port     string
+			Username string
+			Password string
+		}
+		PostgreSQL struct {
+			Driver   string
+			Name     string
+			Host     string
+			Port     string
+			Username string
+			Password string
+		}
 	}
 }
 
@@ -35,12 +45,19 @@ func Get() *ServerConfig {
 	defaultConfig.Port = os.Getenv("APP_PORT")
 	defaultConfig.Mode = os.Getenv("MODE")
 
-	defaultConfig.Database.Driver = os.Getenv("DB_DRIVER")
-	defaultConfig.Database.Name = os.Getenv("DB_NAME")
-	defaultConfig.Database.Host = os.Getenv("DB_HOST")
-	defaultConfig.Database.Port = os.Getenv("DB_PORT")
-	defaultConfig.Database.Username = os.Getenv("DB_USERNAME")
-	defaultConfig.Database.Password = os.Getenv("DB_PASSWORD")
+	defaultConfig.Database.MySQL.Driver = os.Getenv("MYSQL_DRIVER")
+	defaultConfig.Database.MySQL.Name = os.Getenv("MYSQL_NAME")
+	defaultConfig.Database.MySQL.Host = os.Getenv("MYSQL_HOST")
+	defaultConfig.Database.MySQL.Port = os.Getenv("MYSQL_PORT")
+	defaultConfig.Database.MySQL.Username = os.Getenv("MYSQL_USERNAME")
+	defaultConfig.Database.MySQL.Password = os.Getenv("MYSQL_PASSWORD")
+
+	defaultConfig.Database.PostgreSQL.Driver = os.Getenv("POSTGRESQL_DRIVER")
+	defaultConfig.Database.PostgreSQL.Name = os.Getenv("PostgreSQL_NAME")
+	defaultConfig.Database.PostgreSQL.Host = os.Getenv("PostgreSQL_HOST")
+	defaultConfig.Database.PostgreSQL.Port = os.Getenv("PostgreSQL_PORT")
+	defaultConfig.Database.PostgreSQL.Username = os.Getenv("PostgreSQL_USERNAME")
+	defaultConfig.Database.PostgreSQL.Password = os.Getenv("POSTGRESQL_PASSWORD")
 
 	return &defaultConfig
 }
