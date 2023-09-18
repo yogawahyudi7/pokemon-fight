@@ -7,6 +7,7 @@ import (
 	"pokemon-fight/deliveries/routes"
 	"pokemon-fight/repositories"
 	"pokemon-fight/seeders"
+	"pokemon-fight/services"
 	"pokemon-fight/utils"
 
 	"github.com/labstack/echo/v4"
@@ -16,7 +17,8 @@ import (
 func main() {
 
 	configs := configs.Get()
-	db := utils.InitDB(configs)
+	db := utils.PostgreSQL(configs)
+	services := services.NewServices(configs)
 
 	utils.InitialMigrate(configs, db)
 
@@ -33,7 +35,7 @@ func main() {
 	blacklistRepositories := repositories.NewBlacklistRepositories(db)
 
 	userControllers := controllers.NewUserControllers(userRepositories)
-	pokemonControllers := controllers.NewPokemonControllers(pokemonRepositories, userRepositories)
+	pokemonControllers := controllers.NewPokemonControllers(pokemonRepositories, userRepositories, services)
 	competitionControllers := controllers.NewCompetitionControllers(competitionRepositories, pokemonRepositories, seasonRepositories, userRepositories, blacklistRepositories)
 	scoreControllers := controllers.NewScoreControllers(blacklistRepositories, userRepositories, pokemonRepositories, seasonRepositories, scoreRepositories)
 	seasonControllers := controllers.NewSeasonControllers(blacklistRepositories, userRepositories, pokemonRepositories, seasonRepositories, scoreRepositories)

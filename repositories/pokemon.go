@@ -3,6 +3,7 @@ package repositories
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"pokemon-fight/constants"
@@ -91,24 +92,18 @@ func (pr *PokemonRepositories) GetPokemon(str interface{}) (data models.Pokemon,
 	element := []string{api, path}
 	apiPath := strings.Join(element, "")
 
-	// fmt.Println("--API PATH--")
-	// fmt.Println(apiPath)
-
 	response, err := http.Get(apiPath)
 
 	if err != nil {
 		return data, err
 	}
 
-	responseData, err := ioutil.ReadAll(response.Body)
+	responseData, err := io.ReadAll(response.Body)
 	if err != nil {
 		return data, err
 	}
 
 	json.Unmarshal(responseData, &data)
-
-	// fmt.Println("--DATA RESULT--")
-	// fmt.Println(data)
 
 	return data, err
 }
