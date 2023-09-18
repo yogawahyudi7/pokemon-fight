@@ -41,7 +41,7 @@ func PostgreSQL(config *configs.ServerConfig) *gorm.DB {
 
 	sslmode := "disable"
 	timeZone := "Asia/Jakarta"
-	user := set.Name
+	user := set.Username
 	password := set.Password
 	host := set.Host
 	port := set.Port

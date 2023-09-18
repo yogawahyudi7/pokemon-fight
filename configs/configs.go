@@ -8,9 +8,15 @@ import (
 )
 
 type ServerConfig struct {
-	Name     string
-	Port     string
-	Mode     string
+	Name string
+	Port string
+	Mode string
+
+	GoogleCloudStorage struct {
+		Crendential string
+		BuketName   string
+		BuketPath   string
+	}
 	Database struct {
 		MySQL struct {
 			Driver   string
@@ -44,6 +50,8 @@ func Get() *ServerConfig {
 	defaultConfig.Name = os.Getenv("APP_NAME")
 	defaultConfig.Port = os.Getenv("APP_PORT")
 	defaultConfig.Mode = os.Getenv("MODE")
+
+	defaultConfig.GoogleCloudStorage.Crendential = os.Getenv("GOOGLE_CLOUD_CREDENTIAL")
 
 	defaultConfig.Database.MySQL.Driver = os.Getenv("MYSQL_DRIVER")
 	defaultConfig.Database.MySQL.Name = os.Getenv("MYSQL_NAME")

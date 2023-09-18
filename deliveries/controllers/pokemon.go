@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"pokemon-fight/deliveries/common"
 	"pokemon-fight/deliveries/middleware"
+	"pokemon-fight/facade"
 	"pokemon-fight/helpers"
 	"pokemon-fight/repositories"
+	"pokemon-fight/services"
+	"strconv"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -18,12 +21,14 @@ var validate = validator.New()
 type PokemonControllers struct {
 	Repositories repositories.PokemonRepositoriesInterface
 	Auth         repositories.UserRepositoriesInterface
+	Services     services.ServiceInterface
 }
 
-func NewPokemonControllers(repositories repositories.PokemonRepositoriesInterface, auth repositories.UserRepositoriesInterface) *PokemonControllers {
+func NewPokemonControllers(repositories repositories.PokemonRepositoriesInterface, auth repositories.UserRepositoriesInterface, services services.ServiceInterface) *PokemonControllers {
 	return &PokemonControllers{
 		Repositories: repositories,
 		Auth:         auth,
+		Services:     services,
 	}
 }
 
@@ -199,4 +204,72 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 	// fmt.Println("=", pokemons)
 
 	return ctx.JSON(http.StatusOK, response.Found(pokemon))
+}
+
+func (pc PokemonControllers) UploadImagePokemon(ctx echo.Context) error {
+	response := common.Response{}
+
+	//check otorisasi
+	tokenUserId := middleware.ExtractToken(ctx)
+	if tokenUserId == 0 {
+		return ctx.JSON(http.StatusUnauthorized, response.Unauthorized(1))
+	}
+	user, err := pc.Auth.GetUserById(tokenUserId)
+	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return ctx.JSON(http.StatusUnauthorized, response.Unauthorized(6))
+		}
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError("User Id : "+err.Error()))
+	}
+	if user.Token == "" {
+		return ctx.JSON(http.StatusUnauthorized, response.Unauthorized(2))
+	}
+	if user.LevelId != 2 {
+		return ctx.JSON(http.StatusUnauthorized, response.Unauthorized(3))
+	}
+
+	// Maksimum ukuran file yang diizinkan (dalam byte)
+	maxFileSize := int64(10 * 1024 * 1024) // Contoh: 10MB
+
+	// Dapatkan Id pada form value
+	idStr := ctx.FormValue("id")
+
+	id, _ := strconv.Atoi(idStr)
+
+	// Dapatkan file dari permintaan
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Gagal mendapatkan file dari form"})
+	}
+
+	// Validasi ukuran file
+	if file.Size > maxFileSize {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Ukuran file terlalu besar"})
+	}
+
+	// Buka file yang diunggah
+	src, err := file.Open()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Gagal membuka file"})
+	}
+	defer src.Close()
+
+	pokemonId := strconv.Itoa(id)
+
+	filePatch, err := facade.ServerUploadFile(pokemonId, file)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error upload to server": err.Error()})
+	}
+
+	err = pc.Services.UploadImagePokemonGCS(pokemonId, filePatch)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error upload to gcs": err.Error()})
+	}
+
+	err = facade.ServerRemoveFile(filePatch)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error remove file": err.Error()})
+	}
+
+	return ctx.JSON(http.StatusOK, response.Saved(nil))
 }
