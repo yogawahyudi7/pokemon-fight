@@ -9,7 +9,6 @@ import (
 	"pokemon-fight/helpers"
 	"pokemon-fight/repositories"
 	"pokemon-fight/services"
-	"strconv"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -158,8 +157,9 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
-	fmt.Println("-- DATA GET ALL --")
-	fmt.Println("=", data)
+	if data.Id == 0 {
+		return ctx.JSON(http.StatusNotFound, response.NotFound(""))
+	}
 
 	abilities := []string{}
 	for _, vData := range data.Abilities {
@@ -197,12 +197,6 @@ func (pc PokemonControllers) GetPokemon(ctx echo.Context) error {
 		BaseExperience: data.BaseExperience,
 	}
 
-	if data.Id == 0 {
-		return ctx.JSON(http.StatusNotFound, response.NotFound(""))
-	}
-	// fmt.Println("-- DATA POKEMON --")
-	// fmt.Println("=", pokemons)
-
 	return ctx.JSON(http.StatusOK, response.Found(pokemon))
 }
 
@@ -232,43 +226,58 @@ func (pc PokemonControllers) UploadImagePokemon(ctx echo.Context) error {
 	maxFileSize := int64(10 * 1024 * 1024) // Contoh: 10MB
 
 	// Dapatkan Id pada form value
-	idStr := ctx.FormValue("id")
+	pokemonId := ctx.FormValue("pokemonId")
 
-	id, _ := strconv.Atoi(idStr)
+	if pokemonId == "" {
+		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [pokemonId] Tidak Boleh Kosong."))
+
+	}
+
+	data, err := pc.Repositories.GetPokemon(pokemonId)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+	}
+
+	if data.Id == 0 {
+		responseMessage := fmt.Sprintf("Maaf, Pokemon Dengan Id [%v] Tidak Ditemukan.", pokemonId)
+		return ctx.JSON(http.StatusNotFound, response.NotFound(responseMessage))
+	}
 
 	// Dapatkan file dari permintaan
 	file, err := ctx.FormFile("file")
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Gagal mendapatkan file dari form"})
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
+	// Validasi tipe file
+	if !helpers.IsValidFileType(file) {
+		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Maaf, File Tidak Valid."))
+	}
 	// Validasi ukuran file
 	if file.Size > maxFileSize {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Ukuran file terlalu besar"})
+		return ctx.JSON(http.StatusInternalServerError, response.BadRequest("Maaf, Ukuran File Terlalu Besar."))
 	}
 
 	// Buka file yang diunggah
 	src, err := file.Open()
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Gagal membuka file"})
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 	defer src.Close()
 
-	pokemonId := strconv.Itoa(id)
-
 	filePatch, err := facade.ServerUploadFile(pokemonId, file)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error upload to server": err.Error()})
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
 	err = pc.Services.UploadImagePokemonGCS(pokemonId, filePatch)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error upload to gcs": err.Error()})
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
 	err = facade.ServerRemoveFile(filePatch)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error remove file": err.Error()})
+		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
 	}
 
 	return ctx.JSON(http.StatusOK, response.Saved(nil))

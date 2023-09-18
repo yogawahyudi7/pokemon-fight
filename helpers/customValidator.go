@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"fmt"
+	"mime/multipart"
 	"pokemon-fight/constants"
 	"regexp"
 	"strconv"
@@ -103,4 +104,18 @@ func ValidatorGeneralName(params string) (code int, err string) {
 	}
 
 	return 0, ""
+}
+
+func IsValidFileType(file *multipart.FileHeader) bool {
+	// Daftar tipe file yang diizinkan (misalnya, JPEG, PNG)
+	allowedTypes := []string{"image/jpeg", "image/png"}
+
+	// Mengecek tipe file di antara yang diizinkan
+	for _, allowedType := range allowedTypes {
+		if file.Header.Get("Content-Type") == allowedType {
+			return true
+		}
+	}
+
+	return false
 }
