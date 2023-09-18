@@ -28,9 +28,10 @@ func NewServices(config *configs.ServerConfig) *Services {
 
 func (s *Services) UploadImagePokemonGCS(pokemonId string, filePtch string) error {
 
-	bucketName := "poke_fight_club"
-	pokemonIdImagePath := "image/pokemonId"
-	credentials := "credential/crested-return-398003-dade99e8c333.json"
+	set := s.config.GoogleCloudStorage
+	bucketName := set.BuketName
+	pokemonIdImagePath := set.BuketImagePath
+	credentials := set.Crendential
 
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx, option.WithCredentialsFile(credentials))
@@ -45,7 +46,7 @@ func (s *Services) UploadImagePokemonGCS(pokemonId string, filePtch string) erro
 	buketPath := strings.Join([]string{pokemonIdImagePath, pokemonId}, "/")
 
 	t := time.Now()
-	timeFile := t.Format("20060102150405")
+	timeFile := t.Format("20060102:150405")
 	filenameJoin := []string{constants.TypeIMG, "-", timeFile}
 	filename := strings.Join(filenameJoin, "")
 

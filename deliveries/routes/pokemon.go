@@ -10,8 +10,8 @@ import (
 
 func RegisterPathPokemon(e *echo.Group, pokemon *controllers.PokemonControllers) {
 
-	e.GET("/pokemons", pokemon.GetPokemons, echojwt.WithConfig(echojwt.Config(middleware.MiddlewareConfig()))) //OPERASIONAL
-	e.GET("/pokemon", pokemon.GetPokemon, echojwt.WithConfig(echojwt.Config(middleware.MiddlewareConfig())))   //OPERASIONAL
-	e.POST("/pokemon-upload", pokemon.UploadImagePokemon)                                                      //OPERASIONAL
+	e.GET("/pokemons", pokemon.GetPokemons, echojwt.WithConfig(echojwt.Config(middleware.MiddlewareConfig())))               //OPERASIONAL
+	e.GET("/pokemon", pokemon.GetPokemon, echojwt.WithConfig(echojwt.Config(middleware.MiddlewareConfig())))                 //OPERASIONAL
+	e.POST("/pokemon-upload", pokemon.UploadImagePokemon, echojwt.WithConfig(echojwt.Config(middleware.MiddlewareConfig()))) //OPERASIONAL
 
 }
