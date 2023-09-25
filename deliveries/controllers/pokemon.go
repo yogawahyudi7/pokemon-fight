@@ -230,7 +230,6 @@ func (pc PokemonControllers) UploadImagePokemon(ctx echo.Context) error {
 
 	if pokemonId == "" {
 		return ctx.JSON(http.StatusBadRequest, response.BadRequest("Maaf, Parameter [pokemonId] Tidak Boleh Kosong."))
-
 	}
 
 	data, err := pc.Repositories.GetPokemon(pokemonId)
@@ -246,7 +245,9 @@ func (pc PokemonControllers) UploadImagePokemon(ctx echo.Context) error {
 	// Dapatkan file dari permintaan
 	file, err := ctx.FormFile("file")
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, response.InternalServerError(err.Error()))
+		responseMessage := "Maaf, File Yang Dimasukan Tidak Valid."
+
+		return ctx.JSON(http.StatusBadRequest, response.NotFound(responseMessage))
 	}
 
 	// Validasi tipe file

@@ -18,7 +18,6 @@ func main() {
 
 	configs := configs.Get()
 	db := utils.PostgreSQL(configs)
-	services := services.NewServices(configs)
 
 	utils.InitialMigrate(configs, db)
 
@@ -26,6 +25,8 @@ func main() {
 	seeders.SeasonSeeder(db)
 	seeders.CompetitionSeeder(db)
 	seeders.ScoreSeeder(db)
+
+	services := services.NewServices(configs)
 
 	userRepositories := repositories.NewUserRepositories(db)
 	pokemonRepositories := repositories.NewPokemonRepositories(db)

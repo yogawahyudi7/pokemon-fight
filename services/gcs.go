@@ -26,17 +26,26 @@ func NewServices(config *configs.ServerConfig) *Services {
 	return &Services{config: config}
 }
 
+func (s *Services) openGCS() (xtc context.Context, client *storage.Client, err error) {
+	credentials := s.config.GoogleCloudStorage.Crendential
+	ctx := context.Background()
+	client, err = storage.NewClient(ctx, option.WithCredentialsFile(credentials))
+	if err != nil {
+		return ctx, client, fmt.Errorf("gagal membuat klien gcs: %v", err)
+	}
+
+	return ctx, client, err
+}
+
 func (s *Services) UploadImagePokemonGCS(pokemonId string, filePtch string) error {
 
 	set := s.config.GoogleCloudStorage
 	bucketName := set.BuketName
 	pokemonIdImagePath := set.BuketImagePath
-	credentials := set.Crendential
 
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx, option.WithCredentialsFile(credentials))
+	ctx, client, err := s.openGCS()
 	if err != nil {
-		return fmt.Errorf("gagal membuat klien gcs: %v", err)
+		return err
 	}
 	defer client.Close()
 
