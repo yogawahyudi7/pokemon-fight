@@ -14,7 +14,7 @@ import (
 	"gorm.io/plugin/dbresolver"
 )
 
-func InitDB(config *configs.ServerConfig) *gorm.DB {
+func MySQL(config *configs.ServerConfig) *gorm.DB {
 
 	set := config.Database.MySQL
 	dsnString := []string{
